@@ -20,7 +20,7 @@ use Cake\TestSuite\Fixture\TestFixture;
  * Class ShadowPostFixture
  *
  */
-class ShadowPostsFixture extends TestFixture {
+class ShadowArticlesFixture extends TestFixture {
 
 /**
  * fields property
@@ -29,10 +29,11 @@ class ShadowPostsFixture extends TestFixture {
  */
 	public $fields = [
 		'id' => ['type' => 'integer'],
-		'post_id' => ['type' => 'integer'],
+		'article_id' => ['type' => 'integer'],
 		'locale' => ['type' => 'string', 'null' => false],
 		'title' => ['type' => 'string', 'null' => false],
-		'body' => 'text'
+		'body' => 'text',
+		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']]]
 	];
 
 /**
@@ -41,7 +42,8 @@ class ShadowPostsFixture extends TestFixture {
  * @var array
  */
 	public $records = [
-		['post_id' => 1, 'locale' => 'es', 'title' => 'Primer post', 'body' => 'Este el el primer post'],
-		['post_id' => 1, 'locale' => 'de', 'title' => 'Erste Eintrag', 'body' => 'Dies ist der erste Eintrag'],
+		['article_id' => 1, 'locale' => 'es', 'title' => '#1 ES', 'body' => '#1 ES body'],
+		['article_id' => 1, 'locale' => 'de', 'title' => '#1 DE', 'body' => '#1 DE body'],
+		['article_id' => 2, 'locale' => 'es', 'title' => '#2 ES', 'body' => '#2 ES body'],
 	];
 }
