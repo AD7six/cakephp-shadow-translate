@@ -1,0 +1,13 @@
+{
+    "name": "ad7six/shadow-translate",
+    "description": "Manage translated content with shadow tables",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andy Dawson",
+            "email": "andydawson76@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}
