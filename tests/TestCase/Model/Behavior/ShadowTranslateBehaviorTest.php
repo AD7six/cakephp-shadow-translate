@@ -1,7 +1,8 @@
 <?php
 namespace ShadowTranslate\Test\TestCase\Model\Behavior;
 
-use ShadowTranslate\Model\Behavior\ShadowTranslateBehavior;
+use Cake\I18n\I18n;
+use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -9,34 +10,15 @@ use Cake\TestSuite\TestCase;
  */
 class ShadowTranslateBehaviorTest extends TestCase {
 
-/**
- * fixtures
- *
- * @var array
- */
 	public $fixtures = [
 		'core.articles',
-		'shadowTranslate.ShadowArticles',
+		'core.comments',
+		'core.authors',
+		'plugin.ShadowTranslate.ArticlesTranslations'
 	];
 
-/**
- * setUp method
- *
- * @return void
- */
-	public function setUp() {
-		parent::setUp();
-		$this->ShadowTranslate = new ShadowTranslateBehavior();
-	}
-
-/**
- * tearDown method
- *
- * @return void
- */
 	public function tearDown() {
 		parent::tearDown();
-		unset($this->ShadowTranslate);
 		I18n::locale(I18n::defaultLocale());
 		TableRegistry::clear();
 	}
@@ -48,14 +30,15 @@ class ShadowTranslateBehaviorTest extends TestCase {
  */
 	public function testFindSingleLocale() {
 		$table = TableRegistry::get('Articles');
-		$table->addBehavior('ShadowTranslate.ShadowTranslate', ['fields' => ['title', 'body']]);
+		$table->addBehavior('ShadowTranslate.ShadowTranslate');
 		$table->locale('eng');
 		$results = $table->find()->combine('title', 'body', 'id')->toArray();
 		$expected = [
-			1 => ['Title #1' => 'Content #1'],
-			2 => ['Title #2' => 'Content #2'],
-			3 => ['Title #3' => 'Content #3'],
+			1 => ['#1 ENG' => '#1 ENG body'],
+			2 => ['#2 ENG' => '#2 ENG body'],
+			3 => ['Third Article' => 'Third Article Body']
 		];
 		$this->assertSame($expected, $results);
 	}
+
 }

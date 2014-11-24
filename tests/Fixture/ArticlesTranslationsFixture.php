@@ -12,7 +12,7 @@
  * @since         1.2.0
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
-namespace Cake\Test\Fixture;
+namespace ShadowTranslate\Test\Fixture;
 
 use Cake\TestSuite\Fixture\TestFixture;
 
@@ -20,7 +20,7 @@ use Cake\TestSuite\Fixture\TestFixture;
  * Class ShadowPostFixture
  *
  */
-class ShadowArticlesFixture extends TestFixture {
+class ArticlesTranslationsFixture extends TestFixture {
 
 /**
  * fields property
@@ -29,11 +29,10 @@ class ShadowArticlesFixture extends TestFixture {
  */
 	public $fields = [
 		'id' => ['type' => 'integer'],
-		'article_id' => ['type' => 'integer'],
 		'locale' => ['type' => 'string', 'null' => false],
 		'title' => ['type' => 'string', 'null' => false],
 		'body' => 'text',
-		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id']]]
+		'_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id', 'locale']]]
 	];
 
 /**
@@ -42,8 +41,10 @@ class ShadowArticlesFixture extends TestFixture {
  * @var array
  */
 	public $records = [
-		['article_id' => 1, 'locale' => 'es', 'title' => '#1 ES', 'body' => '#1 ES body'],
-		['article_id' => 1, 'locale' => 'de', 'title' => '#1 DE', 'body' => '#1 DE body'],
-		['article_id' => 2, 'locale' => 'es', 'title' => '#2 ES', 'body' => '#2 ES body'],
+		['id' => 1, 'locale' => 'eng', 'title' => '#1 ENG', 'body' => '#1 ENG body'],
+		['id' => 2, 'locale' => 'eng', 'title' => '#2 ENG', 'body' => '#2 ENG body'],
+		['id' => 1, 'locale' => 'es', 'title' => '#1 ES', 'body' => '#1 ES body'],
+		['id' => 1, 'locale' => 'de', 'title' => '#1 DE', 'body' => '#1 DE body'],
+		['id' => 2, 'locale' => 'es', 'title' => '#2 ES', 'body' => '#2 ES body'],
 	];
 }
