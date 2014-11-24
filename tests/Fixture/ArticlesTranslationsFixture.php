@@ -41,10 +41,14 @@ class ArticlesTranslationsFixture extends TestFixture {
  * @var array
  */
 	public $records = [
-		['id' => 1, 'locale' => 'eng', 'title' => '#1 ENG', 'body' => '#1 ENG body'],
-		['id' => 2, 'locale' => 'eng', 'title' => '#2 ENG', 'body' => '#2 ENG body'],
-		['id' => 1, 'locale' => 'es', 'title' => '#1 ES', 'body' => '#1 ES body'],
-		['id' => 1, 'locale' => 'de', 'title' => '#1 DE', 'body' => '#1 DE body'],
-		['id' => 2, 'locale' => 'es', 'title' => '#2 ES', 'body' => '#2 ES body'],
+		['locale' => 'eng', 'id' => 1, 'title' => 'Title #1', 'body' => 'Content #1'],
+		['locale' => 'deu', 'id' => 1, 'title' => 'Titel #1', 'body' => 'Inhalt #1'],
+		['locale' => 'cze', 'id' => 1, 'title' => 'Titulek #1', 'body' => 'Obsah #1'],
+		['locale' => 'eng', 'id' => 2, 'title' => 'Title #2', 'body' => 'Content #2'],
+		['locale' => 'deu', 'id' => 2, 'title' => 'Titel #2', 'body' => 'Inhalt #2'],
+		['locale' => 'cze', 'id' => 2, 'title' => 'Titulek #2', 'body' => 'Obsah #2'],
+		['locale' => 'eng', 'id' => 3, 'title' => 'Title #3', 'body' => 'Content #3'],
+		['locale' => 'deu', 'id' => 3, 'title' => 'Titel #3', 'body' => 'Inhalt #3'],
+		['locale' => 'cze', 'id' => 3, 'title' => 'Titulek #3', 'body' => 'Obsah #3'],
 	];
 }

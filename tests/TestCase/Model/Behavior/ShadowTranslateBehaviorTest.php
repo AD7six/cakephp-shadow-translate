@@ -34,9 +34,9 @@ class ShadowTranslateBehaviorTest extends TestCase {
 		$table->locale('eng');
 		$results = $table->find()->combine('title', 'body', 'id')->toArray();
 		$expected = [
-			1 => ['#1 ENG' => '#1 ENG body'],
-			2 => ['#2 ENG' => '#2 ENG body'],
-			3 => ['Third Article' => 'Third Article Body']
+			1 => ['Title #1' => 'Content #1'],
+			2 => ['Title #2' => 'Content #2'],
+			3 => ['Title #3' => 'Content #3'],
 		];
 		$this->assertSame($expected, $results);
 	}
