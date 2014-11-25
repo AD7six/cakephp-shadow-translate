@@ -1,6 +1,6 @@
 <?php
 /**
- * Test suite bootstrap for <%= $plugin %>.
+ * Test suite bootstrap for ShadowTranslate
  *
  * This function is used to find the location of CakePHP whether CakePHP
  * has been installed as a dependency of the plugin, or the plugin is itself
@@ -21,4 +21,11 @@ $root = $findRoot(__FILE__);
 unset($findRoot);
 
 chdir($root);
-require $root . '/config/bootstrap.php';
+if (file_exists($root . '/config/bootstrap.php')) {
+	require $root . '/config/bootstrap.php';
+} else {
+	require $root . '/vendor/cakephp/cakephp/tests/bootstrap.php';
+	$loader->addNamespace('ShadowTranslate', './src');
+	$loader->addNamespace('ShadowTranslate\Test', './tests');
+	$loader->addNamespace('Cake\Test', './vendor/cakephp/cakephp/tests');
+}
