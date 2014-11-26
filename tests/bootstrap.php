@@ -23,12 +23,13 @@ unset($findRoot);
 chdir($root);
 if (file_exists($root . '/config/bootstrap.php')) {
 	require $root . '/config/bootstrap.php';
-} else {
-	require $root . '/vendor/cakephp/cakephp/tests/bootstrap.php';
-
-	$loader->addNamespace('ShadowTranslate', './src');
-	$loader->addNamespace('ShadowTranslate\Test', './tests');
-	$loader->addNamespace('Cake\Test', './vendor/cakephp/cakephp/tests');
-
-	Plugin::load('ShadowTranslate', ['bootstrap' => false, 'routes' => false]);
+	return;
 }
+
+require $root . '/vendor/cakephp/cakephp/tests/bootstrap.php';
+
+$loader->addNamespace('ShadowTranslate', './src');
+$loader->addNamespace('ShadowTranslate\Test', './tests');
+$loader->addNamespace('Cake\Test', './vendor/cakephp/cakephp/tests');
+
+Plugin::load('ShadowTranslate', ['bootstrap' => false, 'routes' => false]);
