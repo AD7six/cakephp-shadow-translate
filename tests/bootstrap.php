@@ -1,4 +1,7 @@
 <?php
+
+use Cake\Core\Plugin;
+
 /**
  * Test suite bootstrap for ShadowTranslate
  *
@@ -32,4 +35,4 @@ $loader->addNamespace('ShadowTranslate', './src');
 $loader->addNamespace('ShadowTranslate\Test', './tests');
 $loader->addNamespace('Cake\Test', './vendor/cakephp/cakephp/tests');
 
-Plugin::load('ShadowTranslate', ['bootstrap' => false, 'routes' => false]);
+Plugin::load('ShadowTranslate', ['path' => dirname(dirname(__FILE__)) . '/src']);
