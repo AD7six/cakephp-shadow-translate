@@ -20,6 +20,12 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  */
 	protected $_defaultConfig = [];
 
+/**
+ * Constructor
+ *
+ * @param \Cake\ORM\Table $table Table instance
+ * @param array $config Configuration
+ */
 	public function __construct(Table $table, array $config = []) {
 		$config += [
 			'alias' => $table->alias() . 'Translations',
@@ -105,7 +111,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			}
 			$hydrated = !is_array($row);
 
-			foreach($row->translation->visibleProperties() as $field) {
+			foreach ($row->translation->visibleProperties() as $field) {
 
 				if ($field === 'id') {
 					continue;
