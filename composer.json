@@ -9,5 +9,18 @@
         }
     ],
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+        "cakephp/cakephp": "3.0.*-dev",
+        "cakephp/plugin-installer": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "ShadowTranslate\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ShadowTranslate\\Test\\": "tests"
+        }
+    }
 }
