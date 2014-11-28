@@ -30,17 +30,10 @@ if (file_exists($root . '/config/bootstrap.php')) {
 	return;
 }
 
-putenv('db_dsn=sqlite:///:memory:?log=1');
 require $root . '/vendor/cakephp/cakephp/tests/bootstrap.php';
 $loader->addNamespace('Cake\Test', './vendor/cakephp/cakephp/tests');
 
 Plugin::load('ShadowTranslate', [
 	'path' => dirname(dirname(__FILE__)) . DS,
 	'autoload' => true
-]);
-
-Log::config('queries', [
-	'className' => 'Console',
-	'stream' => 'php://stderr',
-	'scopes' => ['queriesLog']
 ]);
