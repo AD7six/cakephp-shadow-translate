@@ -127,7 +127,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		}
 
 		$alias = $this->_table->alias();
-		foreach($config['fields'] as $field) {
+		foreach ($config['fields'] as $field) {
 			if (
 				$addAll ||
 				in_array($field, $select, true) ||
@@ -169,7 +169,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 
 			$keys = $hydrated ? $translation->visibleProperties() : array_keys($translation);
 
-			foreach($keys as $field) {
+			foreach ($keys as $field) {
 				if ($field === 'locale') {
 					$row['_locale'] = $translation[$field];
 					continue;
@@ -200,7 +200,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			$translations = (array)$row->get('_i18n');
 
 			$result = [];
-			foreach($translations as $translation) {
+			foreach ($translations as $translation) {
 				unset($translation['id']);
 				$result[$translation['locale']] = $translation;
 			}

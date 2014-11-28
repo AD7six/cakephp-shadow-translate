@@ -26,7 +26,6 @@ class Table extends CakeTable {
 
 }
 
-
 /**
  * ShadowTranslateBehavior test case
  */
@@ -50,10 +49,11 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		$aliases = ['Articles', 'Authors', 'Comments'];
 		$options = ['className' => 'ShadowTranslate\Test\TestCase\Model\Behavior\Table'];
 
-		foreach($aliases as $alias) {
+		foreach ($aliases as $alias) {
 			TableRegistry::get($alias, $options);
 		}
 
 		parent::setUp();
 	}
+
 }
