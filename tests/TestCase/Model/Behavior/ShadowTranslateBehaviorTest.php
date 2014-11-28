@@ -2,43 +2,58 @@
 namespace ShadowTranslate\Test\TestCase\Model\Behavior;
 
 use Cake\I18n\I18n;
+use Cake\ORM\Table as CakeTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
+use Cake\Test\TestCase\Model\Behavior\TranslateBehaviorTest;
 
 /**
- * ShadowTranslate\Model\Behavior\ShadowTranslateBehavior Test Case
+ * Test Table class
+ *
+ * The sole purpose of this class is to hijack behavior loading to substitude
+ * The translate behavior with the shadow translate behavior. This allows the
+ * core test case to be used to verify as close as possible that the shadow
+ * translate behavior is functionally equivalent to the core behavior.
  */
-class ShadowTranslateBehaviorTest extends TestCase {
+class Table extends CakeTable {
+
+	public function addBehavior($name, array $options = []) {
+		if ($name === 'Translate') {
+			$name = 'ShadowTranslate.ShadowTranslate';
+		}
+		$this->_behaviors->load($name, $options);
+	}
+
+}
+
+
+/**
+ * ShadowTranslateBehavior test case
+ */
+class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 
 	public $fixtures = [
 		'core.articles',
-		'core.comments',
 		'core.authors',
-		'plugin.ShadowTranslate.ArticlesTranslations'
+		'core.comments',
+		'plugin.ShadowTranslate.ArticlesTranslations',
+		'plugin.ShadowTranslate.AuthorsTranslations',
+		'plugin.ShadowTranslate.CommentsTranslations'
 	];
 
-	public function tearDown() {
-		parent::tearDown();
-		I18n::locale(I18n::defaultLocale());
-		TableRegistry::clear();
-	}
-
 /**
- * Tests that fields from a translated model are overriden
+ * Seed the table registry with this test case's Table class
  *
  * @return void
  */
-	public function testFindSingleLocale() {
-		$table = TableRegistry::get('Articles');
-		$table->addBehavior('ShadowTranslate.ShadowTranslate');
-		$table->locale('eng');
-		$results = $table->find()->combine('title', 'body', 'id')->toArray();
-		$expected = [
-			1 => ['Title #1' => 'Content #1'],
-			2 => ['Title #2' => 'Content #2'],
-			3 => ['Title #3' => 'Content #3'],
-		];
-		$this->assertSame($expected, $results);
-	}
+	public function setUp() {
+		$aliases = ['Articles', 'Authors', 'Comments'];
+		$options = ['className' => 'ShadowTranslate\Test\TestCase\Model\Behavior\Table'];
 
+		foreach($aliases as $alias) {
+			TableRegistry::get($alias, $options);
+		}
+
+		parent::setUp();
+	}
 }
