@@ -153,13 +153,18 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				return $row;
 			}
 
+			$hydrated = !is_array($row);
+
 			if (empty($row['translation'])) {
 				$row['_locale'] = $this->locale();
 				unset($row['translation']);
+
+				if ($hydrated) {
+					$row->clean();
+				}
 				return $row;
 			}
 
-			$hydrated = !is_array($row);
 			$translation = $row['translation'];
 
 			$keys = $hydrated ? $translation->visibleProperties() : array_keys($translation);
@@ -179,6 +184,31 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				$row->clean();
 			}
 
+			return $row;
+		});
+	}
+
+/**
+ * Modifies the results from a table find in order to merge full translation records
+ * into each entity under the `_translations` key
+ *
+ * @param \Cake\Datasource\ResultSetInterface $results Results to modify.
+ * @return \Cake\Collection\Collection
+ */
+	public function groupTranslations($results) {
+		return $results->map(function ($row) {
+			$translations = (array)$row->get('_i18n');
+
+			$result = [];
+			foreach($translations as $translation) {
+				unset($translation['id']);
+				$result[$translation['locale']] = $translation;
+			}
+
+			$options = ['setter' => false, 'guard' => false];
+			$row->set('_translations', $result, $options);
+			unset($row['_i18n']);
+			$row->clean();
 			return $row;
 		});
 	}
