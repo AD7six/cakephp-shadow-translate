@@ -322,42 +322,17 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			return;
 		}
 
-		$fields = $this->_config['fields'];
 		$primaryKey = (array)$this->_table->primaryKey();
 		$key = $entity->get(current($primaryKey));
-		$find = [];
 
 		foreach ($translations as $lang => $translation) {
-			foreach ($fields as $field) {
-				if (!$translation->dirty($field)) {
-					continue;
-				}
-				$find[] = ['locale' => $lang, 'field' => $field, 'foreign_key' => $key];
-				$contents[] = new Entity(['content' => $translation->get($field)], [
-					'useSetters' => false
-				]);
+			if (!$translation->id) {
+				$translation->set('id', $key, ['setter' => false]);
+				$translation->set('locale', $lang, ['setter' => false]);
 			}
 		}
 
-		if (empty($find)) {
-			return;
-		}
-
-		$results = $this->_findExistingTranslations($find);
-		$alias = $this->_table->alias();
-
-		foreach ($find as $i => $translation) {
-			if (!empty($results[$i])) {
-				$contents[$i]->set('id', $results[$i], ['setter' => false]);
-				$contents[$i]->isNew(false);
-			} else {
-				$translation['model'] = $alias;
-				$contents[$i]->set($translation, ['setter' => false, 'guard' => false]);
-				$contents[$i]->isNew(true);
-			}
-		}
-
-		$entity->set('_i18n', $contents);
+		$entity->set('_i18n', $translations);
 	}
 
 }
