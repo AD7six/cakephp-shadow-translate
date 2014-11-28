@@ -57,6 +57,24 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 	}
 
 /**
+ * Allow usage without specifying fields explicitly
+ *
+ * @return void
+ */
+	public function testAutoFieldDetection() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate');
+
+		$expected = ['title', 'body'];
+		$result = $table->behaviors()->get('ShadowTranslate')->config('fields');
+		$this->assertSame(
+			$expected,
+			$result,
+			'If no fields are specified, they should be derived from the schema'
+		);
+	}
+
+/**
  * Tests that after deleting a translated entity, all translations are also removed
  *
  * @return void
