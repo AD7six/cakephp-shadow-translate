@@ -75,6 +75,26 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 	}
 
 /**
+ * testExcludeUntranslated
+ *
+ * @return void
+ */
+	public function testExcludeUntranslated() {
+		$table = TableRegistry::get('Authors');
+		$dbConfig = $table->connection()->config('driver');
+		$usingSqlite = ($dbConfig['driver'] === 'Cake\Database\Driver\Sqlite');
+		$this->skipIf($usingSqlite, 'Sqlite does not support right joins, onwhich this functionality depends');
+
+		$table->addBehavior('Translate', ['joinType' => 'RIGHT']);
+		$table->locale('eng');
+		$results = $table->find('list')->toArray();
+		$expected = [
+			1 => 'May-rianoh'
+		];
+		$this->assertSame($expected, $results);
+	}
+
+/**
  * Tests that after deleting a translated entity, all translations are also removed
  *
  * @return void
