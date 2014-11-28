@@ -56,4 +56,21 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		parent::setUp();
 	}
 
+/**
+ * Tests that after deleting a translated entity, all translations are also removed
+ *
+ * @return void
+ */
+	public function testDelete() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+		$article = $table->find()->first();
+		$this->assertTrue($table->delete($article));
+
+		$translations = TableRegistry::get('ArticlesTranslations')->find()
+			->where(['id' => $article->id])
+			->count();
+		$this->assertEquals(0, $translations);
+	}
+
 }
