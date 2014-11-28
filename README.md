@@ -1,6 +1,7 @@
 # Shadow translate
 
 [![Build Status](https://travis-ci.org/AD7six/cakephp-shadow-translate.png?branch=master)](https://travis-ci.org/AD7six/cakephp-shadow-translate)
+[![Coverage Status](https://coveralls.io/repos/AD7six/cakephp-shadow-translate/badge.png)](https://coveralls.io/r/AD7six/cakephp-shadow-translate)
 
 This plugin uses a shadow table for translated content, instead of the core's more flexible (but
 also potentially quite inefficient) EAV-style translate behavior. The shadow translate behavior
