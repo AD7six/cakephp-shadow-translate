@@ -2,15 +2,14 @@
 
 [![Build Status](https://travis-ci.org/AD7six/cakephp-shadow-translate.png?branch=master)](https://travis-ci.org/AD7six/cakephp-shadow-translate)
 
-This plugin uses a shadow table for translated content, instead of the cores more flexible (but
-also potentially quite inefficient) EAV-style translate behavior.
-
-The shadow translate behavior is designed to have the same api as the core's translate behavior
-making it a drop-in replacment in terms of usage.
+This plugin uses a shadow table for translated content, instead of the core's more flexible (but
+also potentially quite inefficient) EAV-style translate behavior. The shadow translate behavior
+is designed to have the same api as the core's translate behavior making it a drop-in
+replacment in terms of usage.
 
 ## Quickstart
 
-The translate behavior expects each table to have its own translation table. Taking the
+The shadow translate behavior expects each table to have its own translation table. Taking the
 blog tutorial as a start point, the following schema would exist:
 
 	CREATE TABLE posts (
