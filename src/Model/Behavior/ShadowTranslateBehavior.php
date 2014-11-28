@@ -108,7 +108,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  * Only add translations for fields that are in the main table, always
  * add the locale field though.
  *
- * @param Query $query the query to check
+ * @param \Cake\ORM\Query $query the query to check
  * @param array $config the config to use for adding fields
  * @return void
  */
@@ -139,7 +139,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  * If a translated field is used without a model alias in a query, rewrite
  * the order clause to prevent ambiguous field sql errors.
  *
- * @param Query $query the query to check
+ * @param \Cake\ORM\Query $query the query to check
  * @param array $config the config to use for adding fields
  * @return void
  */
