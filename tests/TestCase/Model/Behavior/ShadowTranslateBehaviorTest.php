@@ -32,9 +32,9 @@ class Table extends CakeTable {
 class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 
 	public $fixtures = [
-		'core.articles',
-		'core.authors',
-		'core.comments',
+		'core.Articles',
+		'core.Authors',
+		'core.Comments',
 		'plugin.ShadowTranslate.ArticlesTranslations',
 		'plugin.ShadowTranslate.AuthorsTranslations',
 		'plugin.ShadowTranslate.CommentsTranslations'
