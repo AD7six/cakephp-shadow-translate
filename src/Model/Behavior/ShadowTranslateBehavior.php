@@ -109,7 +109,9 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  * If the query is using autofields (directly or implicitly) add the
  * main table's fields to the query first.
  *
- * Only add translations for fields that are in the main table'
+ * Only add translations for fields that are in the main table, always
+ * add the locale field though.
+ *
  * @param Query $query the query to check
  * @param array $config the config to use for adding fields
  * @return void
@@ -124,8 +126,6 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			$select = $query->clause('select');
 		}
 
-		$config['fields'][] = 'locale';
-
 		$alias = $this->_table->alias();
 		foreach($config['fields'] as $field) {
 			if (
@@ -136,6 +136,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				$query->select($query->aliasField($field, $config['alias']));
 			}
 		}
+		$query->select($query->aliasField('locale', $config['alias']));
 	}
 
 /**
@@ -148,28 +149,31 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  */
 	protected function _rowMapper($results, $locale) {
 		return $results->map(function ($row) {
-			if ($row === null || empty($row['translation'])) {
+			if ($row === null) {
+				return $row;
+			}
+
+			if (empty($row['translation'])) {
+				$row['_locale'] = $this->locale();
+				unset($row['translation']);
 				return $row;
 			}
 
 			$hydrated = !is_array($row);
 			$translation = $row['translation'];
+
 			$keys = $hydrated ? $translation->visibleProperties() : array_keys($translation);
 
 			foreach($keys as $field) {
-				if ($field === 'id') {
-					continue;
-				}
-
-				$value = $translation[$field];
-
 				if ($field === 'locale') {
-					$row['_locale'] = $value;
+					$row['_locale'] = $translation[$field];
 					continue;
 				}
 
-				$row[$field] = $value;
+				$row[$field] = $translation[$field];
 			}
+
+			unset($row['translation']);
 
 			if ($hydrated) {
 				$row->clean();
