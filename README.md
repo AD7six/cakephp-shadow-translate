@@ -4,8 +4,8 @@
 
 This plugin uses a shadow table for translated content, instead of the core's more flexible (but
 also potentially quite inefficient) EAV-style translate behavior. The shadow translate behavior
-is designed to have the same api as the core's translate behavior making it a drop-in
-replacment in terms of usage.
+is designed to have the same API as the core's translate behavior making it a drop-in
+replacement in terms of usage.
 
 ## Quickstart
 
@@ -22,7 +22,7 @@ blog tutorial as a start point, the following schema would exist:
 
 To prepare for using the shadow translate behavior, the following table would be created:
 
-	CREATE TABLE post_translations (
+	CREATE TABLE posts_translations (
 		id INT UNSIGNED,
 		locale VARCHAR(5),
 		title VARCHAR(50),
@@ -35,7 +35,7 @@ using both id and locale.
 
 Usage is very similar to the core's behavior so e.g.:
 
-	class ArticlesTable extends Table {
+	class PostsTable extends Table {
 
 		public function initialize(array $config) {
 			$this->addBehavior('ShadowTranslate.ShadowTranslate');
@@ -47,7 +47,7 @@ the same, and if it doesn't, well, see  below.
 
 ## Roadmap
 
-The initial release is only the behavior it is planned for the future to add:
+The initial release is only the behavior, it is planned for the future to add:
 
  * A shell to create shadow tables (migration based)
  * A shell to import from the core's i18n table
