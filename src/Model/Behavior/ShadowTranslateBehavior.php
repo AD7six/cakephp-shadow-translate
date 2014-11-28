@@ -267,7 +267,9 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 					continue;
 				}
 
-				$row[$field] = $translation[$field];
+				if ($translation[$field] !== null) {
+					$row[$field] = $translation[$field];
+				}
 			}
 
 			unset($row['translation']);
