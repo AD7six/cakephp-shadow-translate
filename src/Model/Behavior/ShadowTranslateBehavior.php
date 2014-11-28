@@ -33,6 +33,13 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			'fields' => '*',
 			'joinType' => 'LEFT'
 		];
+
+		if ($config['fields'] === '*') {
+			$translationTable = TableRegistry::get($config['alias']);
+			$allFields = $translationTable->schema()->columns();
+			$config['fields'] = array_values(array_diff($allFields, ['id', 'locale']));
+		}
+
 		parent::__construct($table, $config);
 	}
 
@@ -88,12 +95,33 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			],
 		]);
 
-		$query
-			->contain([$config['alias']]);
+		$query->contain([$config['alias']]);
+
+		if ($this->_queryNeedsFieldsAdding($query, $config['fields'])) {
+			$query->select($query->aliasFields($config['fields'], $config['alias']));
+		}
 
 		$query->formatResults(function ($results) use ($locale) {
 			return $this->_rowMapper($results, $locale);
 		}, $query::PREPEND);
+	}
+
+/**
+ * Does the query need fields adding?
+ *
+ * @param Query $query the query to check
+ * @param array $fields the fields to add
+ * @return bool
+ */
+	protected function _queryNeedsFieldsAdding(Query $query, array $fields) {
+		if ($query->autoFields() !== false) {
+			return false;
+		}
+
+		$select = $query->clause('select');
+		// TODO WIP
+		debug ($select);
+		die;
 	}
 
 /**
@@ -106,18 +134,20 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  */
 	protected function _rowMapper($results, $locale) {
 		return $results->map(function ($row) {
-			if ($row === null || !$row->translation) {
+			if ($row === null || empty($row['translation'])) {
 				return $row;
 			}
+
 			$hydrated = !is_array($row);
+			$translation = $row['translation'];
+			$keys = $hydrated ? $translation->visibleProperties() : array_keys($translation);
 
-			foreach ($row->translation->visibleProperties() as $field) {
-
+			foreach($keys as $field) {
 				if ($field === 'id') {
 					continue;
 				}
 
-				$value = $row->translation->$field;
+				$value = $translation[$field];
 
 				if ($field === 'locale') {
 					$row['_locale'] = $value;
