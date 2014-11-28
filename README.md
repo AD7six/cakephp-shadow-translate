@@ -10,7 +10,7 @@ replacement in terms of usage.
 ## Quickstart
 
 The shadow translate behavior expects each table to have its own translation table. Taking the
-blog tutorial as a start point, the following schema would exist:
+blog tutorial as a start point, the following table would already exist:
 
 	CREATE TABLE posts (
 		id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +38,7 @@ Usage is very similar to the core's behavior so e.g.:
 	class PostsTable extends Table {
 
 		public function initialize(array $config) {
-			$this->addBehavior('ShadowTranslate.ShadowTranslate');
+			$this->addBehavior('ShadowTranslate.ShadowTranslate', ['fields' => ['title', 'body']]);
 		}
 	}
 
