@@ -149,10 +149,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			return;
 		}
 
-		$changed = false;
-		$newOrder = [];
-
-		$order->iterateParts(function ($c, $field) use (&$changed, &$newOrder, $config) {
+		$order->iterateParts(function ($c, $field) use ($config) {
 			if (
 				strpos($field, '.') ||
 				!in_array($field, $config['fields'])
@@ -161,14 +158,8 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				return;
 			}
 
-			$changed = true;
 			$field = "${config['alias']}.$field";
-			$newOrder[$field] = $c;
 		});
-
-		if ($changed) {
-			$query->order($newOrder, true);
-		}
 	}
 
 /**
