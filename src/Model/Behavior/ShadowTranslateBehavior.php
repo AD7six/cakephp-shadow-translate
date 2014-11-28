@@ -81,14 +81,16 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 
 		$config = $this->config();
 
-		$this->_table->hasOne($config['alias'], [
-			'foreignKey' => ['id'],
-			'joinType' => $config['joinType'],
-			'propertyName' => 'translation',
-			'conditions' => [
-				$config['alias'] . '.locale' => $locale
-			],
-		]);
+		if (!isset($this->_table->{$config['alias']})) {
+			$this->_table->hasOne($config['alias'], [
+				'foreignKey' => ['id'],
+				'joinType' => $config['joinType'],
+				'propertyName' => 'translation',
+				'conditions' => [
+					$config['alias'] . '.locale' => $locale
+				],
+			]);
+		}
 
 		$query->contain([$config['alias']]);
 		$this->_addFieldsToQuery($query, $config);
