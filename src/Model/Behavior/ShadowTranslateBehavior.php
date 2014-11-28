@@ -139,8 +139,15 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			->bufferResults(false)
 			->first();
 
-		foreach ($fields as $field) {
-			$translation->set($field, $values[$field]);
+		if ($translation) {
+			foreach ($fields as $field) {
+				$translation->set($field, $values[$field]);
+			}
+		} else {
+			$translation = new Entity(compact('id', 'locale') + $values, [
+				'useSetters' => false,
+				'markNew' => true
+			]);
 		}
 
 		$entity->set('_i18n', array_merge($bundled, [$translation]));
