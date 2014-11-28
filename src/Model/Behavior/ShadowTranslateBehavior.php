@@ -161,7 +161,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				return;
 			}
 
-			$changeds = true;
+			$changed = true;
 			$field = "${config['alias']}.$field";
 			$newOrder[$field] = $c;
 		});
