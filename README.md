@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/AD7six/cakephp-shadow-translate.png?branch=master)](https://travis-ci.org/AD7six/cakephp-shadow-translate)
 # Introduction
 
 A work in progress.
