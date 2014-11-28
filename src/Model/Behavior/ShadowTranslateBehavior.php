@@ -1,9 +1,11 @@
 <?php
 namespace ShadowTranslate\Model\Behavior;
 
+use ArrayObject;
 use Cake\Event\Event;
 use Cake\Model\Behavior\TranslateBehavior;
 use Cake\ORM\Behavior;
+use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -97,6 +99,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 
 		$query->contain([$config['alias']]);
 		$this->_addFieldsToQuery($query, $config);
+		$this->_aliasOrderForQuery($query, $config);
 
 		$query->formatResults(function ($results) use ($locale) {
 			return $this->_rowMapper($results, $locale);
@@ -137,6 +140,42 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			}
 		}
 		$query->select($query->aliasField('locale', $config['alias']));
+	}
+
+/**
+ * If a translated field is used without a model alias in a query, rewrite
+ * the order clause to prevent ambiguous field sql errors.
+ *
+ * @param Query $query the query to check
+ * @param array $config the config to use for adding fields
+ * @return void
+ */
+	protected function _aliasOrderForQuery(Query $query, array $config) {
+		$order = $query->clause('order');
+		if (!$order || !$order->count()) {
+			return;
+		}
+
+		$changed = false;
+		$updated = [];
+
+		$order->iterateParts(function ($c, $field) use (&$changed, &$updated, $config) {
+			if (
+				strpos($field, '.') ||
+				!in_array($field, $config['fields'])
+			) {
+				$updated[$field] = $c;
+				return;
+			}
+
+			$changeds = true;
+			$field = "${config['alias']}.$field";
+			$updated[$field] = $c;
+		});
+
+		if ($changed) {
+			$query->order($updated, true);
+		}
 	}
 
 /**
@@ -212,4 +251,58 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			return $row;
 		});
 	}
+
+/**
+ * Helper method used to generated multiple translated field entities
+ * out of the data found in the `_translations` property in the passed
+ * entity. The result will be put into its `_i18n` property
+ *
+ * @param \Cake\ORM\Entity $entity Entity
+ * @return void
+ */
+	protected function _bundleTranslatedFields($entity) {
+		$translations = (array)$entity->get('_translations');
+
+		if (empty($translations) && !$entity->dirty('_translations')) {
+			return;
+		}
+
+		$fields = $this->_config['fields'];
+		$primaryKey = (array)$this->_table->primaryKey();
+		$key = $entity->get(current($primaryKey));
+		$find = [];
+
+		foreach ($translations as $lang => $translation) {
+			foreach ($fields as $field) {
+				if (!$translation->dirty($field)) {
+					continue;
+				}
+				$find[] = ['locale' => $lang, 'field' => $field, 'foreign_key' => $key];
+				$contents[] = new Entity(['content' => $translation->get($field)], [
+					'useSetters' => false
+				]);
+			}
+		}
+
+		if (empty($find)) {
+			return;
+		}
+
+		$results = $this->_findExistingTranslations($find);
+		$alias = $this->_table->alias();
+
+		foreach ($find as $i => $translation) {
+			if (!empty($results[$i])) {
+				$contents[$i]->set('id', $results[$i], ['setter' => false]);
+				$contents[$i]->isNew(false);
+			} else {
+				$translation['model'] = $alias;
+				$contents[$i]->set($translation, ['setter' => false, 'guard' => false]);
+				$contents[$i]->isNew(true);
+			}
+		}
+
+		$entity->set('_i18n', $contents);
+	}
+
 }
