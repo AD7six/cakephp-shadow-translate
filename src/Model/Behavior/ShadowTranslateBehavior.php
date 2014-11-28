@@ -107,6 +107,52 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 	}
 
 /**
+ * Modifies the entity before it is saved so that translated fields are persisted
+ * in the database too.
+ *
+ * @param \Cake\Event\Event $event The beforeSave event that was fired
+ * @param \Cake\ORM\Entity $entity The entity that is going to be saved
+ * @param \ArrayObject $options the options passed to the save method
+ * @return void
+ */
+	public function beforeSave(Event $event, Entity $entity, ArrayObject $options) {
+		$locale = $entity->get('_locale') ?: $this->locale();
+		$table = $this->_config['translationTable'];
+		$newOptions = [$table => ['validate' => false]];
+		$options['associated'] = $newOptions + $options['associated'];
+
+		$this->_bundleTranslatedFields($entity);
+		$bundled = $entity->get('_i18n') ?: [];
+
+		if ($locale === $this->config('defaultLocale')) {
+			return;
+		}
+
+		$values = $entity->extract($this->_config['fields'], true);
+		$fields = array_keys($values);
+		$primaryKey = (array)$this->_table->primaryKey();
+		$key = $entity->get(current($primaryKey));
+
+		$translation = TableRegistry::get($table)->find()
+			->select(array_merge(['id', 'locale'], $fields))
+			->where(['locale' => $locale, 'id' => $key])
+			->bufferResults(false)
+			->first();
+
+		foreach ($fields as $field) {
+			$translation->set($field, $values[$field]);
+		}
+
+		$entity->set('_i18n', array_merge($bundled, [$translation]));
+		$entity->set('_locale', $locale, ['setter' => false]);
+		$entity->dirty('_locale', false);
+
+		foreach ($fields as $field) {
+			$entity->dirty($field, false);
+		}
+	}
+
+/**
  * Add translation fields to query
  *
  * If the query is using autofields (directly or implicitly) add the
