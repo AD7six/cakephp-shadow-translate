@@ -8,7 +8,7 @@ php:
 env:
   matrix:
     - DB=mysql db_dsn='mysql://travis@0.0.0.0/cakephp_test'
-    - DB=pgsql  db_dsn='postgres://postgres@127.0.0.1/cakephp_test'
+    - DB=pgsql db_dsn='postgres://postgres@127.0.0.1/cakephp_test'
     - DB=sqlite db_dsn='sqlite:///:memory:'
 
 matrix:
@@ -20,11 +20,10 @@ matrix:
 
 before_script:
   - composer self-update
-
-  - sh -c "if [ '$PHPCS' = '1' ]; then composer require cakephp/cakephp-codesniffer:*; fi"
-
   - composer install --no-interaction --dev
-
+  - sh -c "if [ '$PHPCS' = '1' ]; then composer require cakephp/cakephp-codesniffer:*; fi"
+  - sh -c "if [ '$DB' = 'mysql' ]; then mysql -e 'CREATE DATABASE cakephp_test;'; fi"
+  - sh -c "if [ '$DB' = 'pgsql' ]; then psql -c 'CREATE DATABASE cakephp_test;' -U postgres; fi"
   - sh -c "if [ '$PHPCS' = '1' ]; then ./vendor/bin/phpcs --config-set installed_paths vendor/cakephp/cakephp-codesniffer; fi"
 
   - phpenv rehash
