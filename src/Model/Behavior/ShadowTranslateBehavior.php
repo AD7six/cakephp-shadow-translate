@@ -96,10 +96,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		]);
 
 		$query->contain([$config['alias']]);
-
-		if ($this->_queryNeedsFieldsAdding($query, $config['fields'])) {
-			$query->select($query->aliasFields($config['fields'], $config['alias']));
-		}
+		$this->_addFieldsToQuery($query, $config);
 
 		$query->formatResults(function ($results) use ($locale) {
 			return $this->_rowMapper($results, $locale);
@@ -107,21 +104,38 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 	}
 
 /**
- * Does the query need fields adding?
+ * Add translation fields to query
  *
+ * If the query is using autofields (directly or implicitly) add the
+ * main table's fields to the query first.
+ *
+ * Only add translations for fields that are in the main table'
  * @param Query $query the query to check
- * @param array $fields the fields to add
- * @return bool
+ * @param array $config the config to use for adding fields
+ * @return void
  */
-	protected function _queryNeedsFieldsAdding(Query $query, array $fields) {
-		if ($query->autoFields() !== false) {
-			return false;
+	protected function _addFieldsToQuery(Query $query, array $config) {
+		$select = $query->clause('select');
+		$addAll = false;
+
+		if (!count($select) || $query->autoFields() === true) {
+			$addAll = true;
+			$query->select($query->repository()->schema()->columns());
+			$select = $query->clause('select');
 		}
 
-		$select = $query->clause('select');
-		// TODO WIP
-		debug ($select);
-		die;
+		$config['fields'][] = 'locale';
+
+		$alias = $this->_table->alias();
+		foreach($config['fields'] as $field) {
+			if (
+				$addAll ||
+				in_array($field, $select, true) ||
+				in_array("$alias.$field", $select, true)
+			) {
+				$query->select($query->aliasField($field, $config['alias']));
+			}
+		}
 	}
 
 /**
