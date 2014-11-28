@@ -20,7 +20,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "ShadowTranslate\\Test\\": "tests"
+            "ShadowTranslate\\Test\\": "tests",
+            "Cake\\Test\\": "./vendor/cakephp/cakephp/tests"
         }
     }
 }
