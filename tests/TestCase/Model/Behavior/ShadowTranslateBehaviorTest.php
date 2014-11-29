@@ -36,6 +36,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		'core.Authors',
 		'core.Comments',
 		'plugin.ShadowTranslate.ArticlesTranslations',
+		'plugin.ShadowTranslate.ArticlesMoreTranslations',
 		'plugin.ShadowTranslate.AuthorsTranslations',
 		'plugin.ShadowTranslate.CommentsTranslations'
 	];
@@ -90,6 +91,28 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		$results = $table->find('list')->toArray();
 		$expected = [
 			1 => 'May-rianoh'
+		];
+		$this->assertSame($expected, $results);
+	}
+
+/**
+ * Verify it is not necessary for a translated field to exist in the master table
+ *
+ * @return void
+ */
+	public function testVirtualTranslationField() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', [
+			'alias' => 'ArticlesMoreTranslations',
+			'translationTable' => 'articles_more_translations'
+		]);
+
+		$table->locale('eng');
+		$results = $table->find()->combine('title', 'subtitle', 'id')->toArray();
+		$expected = [
+			1 => ['Title #1' => 'SubTitle #1'],
+			2 => ['Title #2' => 'SubTitle #2'],
+			3 => ['Title #3' => 'SubTitle #3'],
 		];
 		$this->assertSame($expected, $results);
 	}
