@@ -39,7 +39,10 @@ Usage is very similar to the core's behavior so e.g.:
 	class PostsTable extends Table {
 
 		public function initialize(array $config) {
-			$this->addBehavior('ShadowTranslate.ShadowTranslate', ['fields' => ['title', 'body']]);
+			$this->addBehavior(
+				'ShadowTranslate.ShadowTranslate',
+				['fields' => ['title', 'body']]
+			);
 		}
 	}
 
