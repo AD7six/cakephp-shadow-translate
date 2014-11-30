@@ -1,6 +1,7 @@
 {
     "name": "ad7six/shadow-translate",
     "description": "Manage translated content with shadow tables",
+	"type":"cakephp-plugin",
     "license": "MIT",
     "authors": [
         {
