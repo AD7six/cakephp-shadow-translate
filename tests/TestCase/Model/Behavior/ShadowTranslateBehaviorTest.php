@@ -84,7 +84,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		$table = TableRegistry::get('Authors');
 		$dbConfig = $table->connection()->config('driver');
 		$usingSqlite = ($dbConfig['driver'] === 'Cake\Database\Driver\Sqlite');
-		$this->skipIf($usingSqlite, 'Sqlite does not support right joins, onwhich this functionality depends');
+		$this->skipIf($usingSqlite, 'Sqlite does not support right joins, on which this functionality depends');
 
 		$table->addBehavior('Translate', ['joinType' => 'RIGHT']);
 		$table->locale('eng');
