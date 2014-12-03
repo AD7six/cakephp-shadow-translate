@@ -30,7 +30,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		];
 
 		if ($config['fields'] === '*') {
-			$translationTable = TableRegistry::get($config['alias']);
+			$translationTable = $this->_translationTable($config);
 			$allFields = $translationTable->schema()->columns();
 			$config['fields'] = array_values(array_diff($allFields, ['id', 'locale']));
 		}
@@ -51,9 +51,6 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 	public function setupFieldAssociations($fields, $table) {
 		$config = $this->config();
 		$alias = $this->_table->alias();
-
-		$target = TableRegistry::get($config['alias']);
-		$target->table($table);
 
 		$this->_table->hasMany($table, [
 			'foreignKey' => ['id'],
@@ -189,7 +186,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		$primaryKey = (array)$this->_table->primaryKey();
 		$key = $entity->get(current($primaryKey));
 
-		$translation = TableRegistry::get($table)->find()
+		$translation = $this->_translationTable()->find()
 			->select(array_merge(['id', 'locale'], $fields))
 			->where(['locale' => $locale, 'id' => $key])
 			->bufferResults(false)
@@ -321,5 +318,27 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 
 		$entity->set('_i18n', $translations);
 	}
+
+/**
+ * Based on the passed config, return the translation table instance
+ *
+ * @param array $config behavior config to use
+ * @return \Cake\ORM\Table Translation table instance
+ */
+	protected function _translationTable($config = []) {
+		if (!$config) {
+			$config = $this->config();
+		}
+
+		if (TableRegistry::exists($config['alias'])) {
+			return TableRegistry::get($config['alias']);
+		}
+
+		return TableRegistry::get(
+			$config['alias'],
+			['table' => $config['translationTable']]
+		);
+	}
+
 
 }
