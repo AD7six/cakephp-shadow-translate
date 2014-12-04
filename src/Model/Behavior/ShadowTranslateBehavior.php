@@ -49,9 +49,6 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  * @return void
  */
 	public function setupFieldAssociations($fields, $table) {
-		$config = $this->config();
-		$alias = $this->_table->alias();
-
 		$this->_table->hasMany($table, [
 			'foreignKey' => ['id'],
 			'strategy' => 'subquery',
