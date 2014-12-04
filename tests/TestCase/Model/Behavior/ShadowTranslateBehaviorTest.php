@@ -134,4 +134,20 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		$this->assertEquals(0, $translations);
 	}
 
+/**
+ * testNoAmbiguousConditions
+ *
+ * @return void
+ */
+	public function testNoAmbiguousConditions() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+		$table->locale('eng');
+
+		$article = $table->find('all')
+			->where(['id' => 1])->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+	}
+
 }
