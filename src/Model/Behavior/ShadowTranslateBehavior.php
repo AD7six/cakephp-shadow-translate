@@ -2,7 +2,6 @@
 namespace ShadowTranslate\Model\Behavior;
 
 use ArrayObject;
-use Cake\Database\Expression\Comparison;
 use Cake\Database\Expression\FieldInterface;
 use Cake\Event\Event;
 use Cake\Model\Behavior\TranslateBehavior;
