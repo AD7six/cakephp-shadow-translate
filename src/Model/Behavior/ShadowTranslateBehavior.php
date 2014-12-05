@@ -337,5 +337,4 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		);
 	}
 
-
 }
