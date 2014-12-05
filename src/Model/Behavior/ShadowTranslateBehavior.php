@@ -2,6 +2,8 @@
 namespace ShadowTranslate\Model\Behavior;
 
 use ArrayObject;
+use Cake\Database\Expression\Comparison;
+use Cake\Database\Expression\FieldInterface;
 use Cake\Event\Event;
 use Cake\Model\Behavior\TranslateBehavior;
 use Cake\ORM\Behavior;
@@ -23,6 +25,8 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  */
 	public function __construct(Table $table, array $config = []) {
 		$config += [
+			'mainTableAlias' => $table->alias(),
+			'mainTableFields' => $table->schema()->columns(),
 			'alias' => $table->alias() . 'Translations',
 			'translationTable' => $table->table() . '_translations',
 			'fields' => '*',
@@ -86,7 +90,8 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 
 		$query->contain([$config['alias']]);
 		$this->_addFieldsToQuery($query, $config);
-		$this->_aliasOrderForQuery($query, $config);
+		$this->_iterateClause($query, 'order', $config);
+		$this->_traverseClause($query, 'where', $config);
 
 		$query->formatResults(function ($results) use ($locale) {
 			return $this->_rowMapper($results, $locale);
@@ -116,7 +121,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			$select = $query->clause('select');
 		}
 
-		$alias = $this->_table->alias();
+		$alias = $config['mainTableAlias'];
 		foreach ($config['fields'] as $field) {
 			if (
 				$addAll ||
@@ -127,6 +132,88 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			}
 		}
 		$query->select($query->aliasField('locale', $config['alias']));
+	}
+
+/**
+ * Iterate over a clause to alias fields
+ *
+ * The objective here is to transparently prevent ambiguous field errors by
+ * prefixing fields with the appropriate table alias. This method currently
+ * expects to receive an order clause only.
+ *
+ * @param \Cake\ORM\Query $query the query to check
+ * @param string $name The clause name
+ * @param array $config the config to use for adding fields
+ * @return void
+ */
+	protected function _iterateClause(Query $query, $name = '', $config = []) {
+		$clause = $query->clause($name);
+		if (!$clause || !$clause->count()) {
+			return;
+		}
+
+		$alias = $config['alias'];
+		$fields = $config['fields'];
+		$mainTableAlias = $config['mainTableAlias'];
+		$mainTableFields = $config['mainTableFields'];
+
+		$clause->iterateParts(function ($c, $field) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
+			if (!is_string($field) || strpos($field, '.')) {
+				return;
+			}
+
+			if (in_array($field, $fields)) {
+				$field = "$alias.$field";
+				return;
+			}
+
+			if (in_array($field, $mainTableFields)) {
+				$field = "$mainTableAlias.$field";
+			}
+		});
+	}
+
+/**
+ * Traverse over a clause to alias fields
+ *
+ * The objective here is to transparently prevent ambiguous field errors by
+ * prefixing fields with the appropriate table alias. This method currently
+ * expects to receive a where clause only.
+ *
+ * @param \Cake\ORM\Query $query the query to check
+ * @param string $name The clause name
+ * @param array $config the config to use for adding fields
+ * @return void
+ */
+	protected function _traverseClause(Query $query, $name = '', $config = []) {
+		$clause = $query->clause($name);
+		if (!$clause || !$clause->count()) {
+			return;
+		}
+
+		$alias = $config['alias'];
+		$fields = $config['fields'];
+		$mainTableAlias = $config['mainTableAlias'];
+		$mainTableFields = $config['mainTableFields'];
+
+		$clause->traverse(function ($expression) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
+			if (!($expression instanceof FieldInterface)) {
+				return;
+			}
+			$field = $expression->getField();
+			if (!$field || strpos($field, '.')) {
+				return;
+			}
+
+			if (in_array($field, $fields)) {
+				$expression->field("$alias.$field");
+				return;
+			}
+
+			if (in_array($field, $mainTableFields)) {
+				$expression->field("$mainTableAlias.$field");
+			}
+		});
 	}
 
 /**
@@ -148,7 +235,6 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				strpos($field, '.') ||
 				!in_array($field, $config['fields'])
 			) {
-				$newOrder[$field] = $c;
 				return;
 			}
 
