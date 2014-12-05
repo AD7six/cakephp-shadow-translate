@@ -135,6 +135,29 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 	}
 
 /**
+ * testNoAmbiguousFields
+ *
+ * @return void
+ */
+	public function testNoAmbiguousFields() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+		$table->locale('eng');
+
+		$article = $table->find('all')
+			->select(['id'])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+
+		$article = $table->find('all')
+			->select(['title'])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+	}
+
+/**
  * testNoAmbiguousConditions
  *
  * @return void
@@ -145,7 +168,37 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		$table->locale('eng');
 
 		$article = $table->find('all')
-			->where(['id' => 1])->toArray();
+			->where(['id' => 1])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+
+		$article = $table->find('all')
+			->where(['title' => 1])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+	}
+
+/**
+ * testNoAmbiguousOrder
+ *
+ * @return void
+ */
+	public function testNoAmbiguousOrder() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+		$table->locale('eng');
+
+		$article = $table->find('all')
+			->order(['id' => 'asc'])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+
+		$article = $table->find('all')
+			->order(['title' => 'asc'])
+			->toArray();
 
 		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
 	}
