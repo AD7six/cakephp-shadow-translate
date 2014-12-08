@@ -66,6 +66,9 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		$table = TableRegistry::get('Articles');
 		$table->addBehavior('Translate');
 
+		$table->locale('eng');
+		$table->find()->first();
+
 		$expected = ['title', 'body'];
 		$result = $table->behaviors()->get('ShadowTranslate')->config('fields');
 		$this->assertSame(
