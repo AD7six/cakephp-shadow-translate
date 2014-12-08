@@ -39,14 +39,12 @@ Usage is very similar to the core's behavior so e.g.:
 	class PostsTable extends Table {
 
 		public function initialize(array $config) {
-			$this->addBehavior(
-				'ShadowTranslate.ShadowTranslate',
-				['fields' => ['title', 'body']]
-			);
+			$this->addBehavior('ShadowTranslate.ShadowTranslate');
 		}
 	}
 
-From this point forward, see [the documentation for the core translate behavior](http://book.cakephp.org/3.0/en/orm/behaviors/translate.html), the shadow translate behavior should act
+You can specify the fields in the translation table - but if you don't they are derived from the translation
+table schema. From this point forward, see [the documentation for the core translate behavior](http://book.cakephp.org/3.0/en/orm/behaviors/translate.html), the shadow translate behavior should act
 the same, and if it doesn't, well, see  below.
 
 ## Roadmap
