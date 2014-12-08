@@ -25,18 +25,11 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 	public function __construct(Table $table, array $config = []) {
 		$config += [
 			'mainTableAlias' => $table->alias(),
-			'mainTableFields' => $table->schema()->columns(),
 			'alias' => $table->alias() . 'Translations',
 			'translationTable' => $table->table() . '_translations',
-			'fields' => '*',
+			'fields' => [],
 			'joinType' => 'LEFT'
 		];
-
-		if ($config['fields'] === '*') {
-			$translationTable = $this->_translationTable($config);
-			$allFields = $translationTable->schema()->columns();
-			$config['fields'] = array_values(array_diff($allFields, ['id', 'locale']));
-		}
 
 		parent::__construct($table, $config);
 	}
@@ -86,8 +79,8 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				$config['alias'] . '.locale' => $locale
 			],
 		]);
-
 		$query->contain([$config['alias']]);
+
 		$this->_addFieldsToQuery($query, $config);
 		$this->_iterateClause($query, 'order', $config);
 		$this->_traverseClause($query, 'where', $config);
@@ -121,7 +114,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		}
 
 		$alias = $config['mainTableAlias'];
-		foreach ($config['fields'] as $field) {
+		foreach ($this->_translationFields() as $field) {
 			if (
 				$addAll ||
 				in_array($field, $select, true) ||
@@ -152,9 +145,9 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		}
 
 		$alias = $config['alias'];
-		$fields = $config['fields'];
+		$fields = $this->_translationFields();
 		$mainTableAlias = $config['mainTableAlias'];
-		$mainTableFields = $config['mainTableFields'];
+		$mainTableFields = $this->_mainFields();
 
 		$clause->iterateParts(function ($c, $field) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
 			if (!is_string($field) || strpos($field, '.')) {
@@ -191,9 +184,9 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 		}
 
 		$alias = $config['alias'];
-		$fields = $config['fields'];
+		$fields = $this->_translationFields();
 		$mainTableAlias = $config['mainTableAlias'];
-		$mainTableFields = $config['mainTableFields'];
+		$mainTableFields = $this->_mainFields();
 
 		$clause->traverse(function ($expression) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
 			if (!($expression instanceof FieldInterface)) {
@@ -212,32 +205,6 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			if (in_array($field, $mainTableFields)) {
 				$expression->field("$mainTableAlias.$field");
 			}
-		});
-	}
-
-/**
- * If a translated field is used without a model alias in a query, rewrite
- * the order clause to prevent ambiguous field sql errors.
- *
- * @param \Cake\ORM\Query $query the query to check
- * @param array $config the config to use for adding fields
- * @return void
- */
-	protected function _aliasOrderForQuery(Query $query, array $config) {
-		$order = $query->clause('order');
-		if (!$order || !$order->count()) {
-			return;
-		}
-
-		$order->iterateParts(function ($c, $field) use ($config) {
-			if (
-				strpos($field, '.') ||
-				!in_array($field, $config['fields'])
-			) {
-				return;
-			}
-
-			$field = "${config['alias']}.$field";
 		});
 	}
 
@@ -404,6 +371,10 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 /**
  * Based on the passed config, return the translation table instance
  *
+ * If the table already exists in the registry - don't pass any config
+ * as that'll just lead to an exception trying to reconfigure an existing
+ * table.
+ *
  * @param array $config behavior config to use
  * @return \Cake\ORM\Table Translation table instance
  */
@@ -420,6 +391,45 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			$config['alias'],
 			['table' => $config['translationTable']]
 		);
+	}
+
+/**
+ * Lazy define and return the main table fields
+ *
+ * @return array
+ */
+	protected function _mainFields() {
+		$fields = $this->config('mainTableFields');
+
+		if ($fields) {
+			return $fields;
+		}
+
+		$table = $this->_table;
+		$fields = $table->schema()->columns();
+
+		$this->config('mainTableFields', $fields);
+		return $fields;
+	}
+
+/**
+ * Lazy define and return the translation table fields
+ *
+ * @return array
+ */
+	protected function _translationFields() {
+		$fields = $this->config('fields');
+
+		if ($fields) {
+			return $fields;
+		}
+
+		$table = $this->_translationTable();
+		$fields = $table->schema()->columns();
+		$fields = array_values(array_diff($fields, ['id', 'locale']));
+
+		$this->config('fields', $fields);
+		return $fields;
 	}
 
 }
