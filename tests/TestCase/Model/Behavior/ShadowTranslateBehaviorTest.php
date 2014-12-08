@@ -66,6 +66,9 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 		$table = TableRegistry::get('Articles');
 		$table->addBehavior('Translate');
 
+		$table->locale('eng');
+		$table->find()->first();
+
 		$expected = ['title', 'body'];
 		$result = $table->behaviors()->get('ShadowTranslate')->config('fields');
 		$this->assertSame(
@@ -132,6 +135,75 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 			->where(['id' => $article->id])
 			->count();
 		$this->assertEquals(0, $translations);
+	}
+
+/**
+ * testNoAmbiguousFields
+ *
+ * @return void
+ */
+	public function testNoAmbiguousFields() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+		$table->locale('eng');
+
+		$article = $table->find('all')
+			->select(['id'])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+
+		$article = $table->find('all')
+			->select(['title'])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+	}
+
+/**
+ * testNoAmbiguousConditions
+ *
+ * @return void
+ */
+	public function testNoAmbiguousConditions() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+		$table->locale('eng');
+
+		$article = $table->find('all')
+			->where(['id' => 1])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+
+		$article = $table->find('all')
+			->where(['title' => 1])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+	}
+
+/**
+ * testNoAmbiguousOrder
+ *
+ * @return void
+ */
+	public function testNoAmbiguousOrder() {
+		$table = TableRegistry::get('Articles');
+		$table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+		$table->locale('eng');
+
+		$article = $table->find('all')
+			->order(['id' => 'asc'])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+
+		$article = $table->find('all')
+			->order(['title' => 'asc'])
+			->toArray();
+
+		$this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
 	}
 
 }

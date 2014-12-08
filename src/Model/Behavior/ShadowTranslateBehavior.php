@@ -2,6 +2,7 @@
 namespace ShadowTranslate\Model\Behavior;
 
 use ArrayObject;
+use Cake\Database\Expression\FieldInterface;
 use Cake\Event\Event;
 use Cake\Model\Behavior\TranslateBehavior;
 use Cake\ORM\Behavior;
@@ -23,17 +24,12 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  */
 	public function __construct(Table $table, array $config = []) {
 		$config += [
+			'mainTableAlias' => $table->alias(),
 			'alias' => $table->alias() . 'Translations',
 			'translationTable' => $table->table() . '_translations',
-			'fields' => '*',
+			'fields' => [],
 			'joinType' => 'LEFT'
 		];
-
-		if ($config['fields'] === '*') {
-			$translationTable = $this->_translationTable($config);
-			$allFields = $translationTable->schema()->columns();
-			$config['fields'] = array_values(array_diff($allFields, ['id', 'locale']));
-		}
 
 		parent::__construct($table, $config);
 	}
@@ -83,10 +79,11 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 				$config['alias'] . '.locale' => $locale
 			],
 		]);
-
 		$query->contain([$config['alias']]);
+
 		$this->_addFieldsToQuery($query, $config);
-		$this->_aliasOrderForQuery($query, $config);
+		$this->_iterateClause($query, 'order', $config);
+		$this->_traverseClause($query, 'where', $config);
 
 		$query->formatResults(function ($results) use ($locale) {
 			return $this->_rowMapper($results, $locale);
@@ -116,8 +113,8 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			$select = $query->clause('select');
 		}
 
-		$alias = $this->_table->alias();
-		foreach ($config['fields'] as $field) {
+		$alias = $config['mainTableAlias'];
+		foreach ($this->_translationFields() as $field) {
 			if (
 				$addAll ||
 				in_array($field, $select, true) ||
@@ -130,29 +127,84 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 	}
 
 /**
- * If a translated field is used without a model alias in a query, rewrite
- * the order clause to prevent ambiguous field sql errors.
+ * Iterate over a clause to alias fields
+ *
+ * The objective here is to transparently prevent ambiguous field errors by
+ * prefixing fields with the appropriate table alias. This method currently
+ * expects to receive an order clause only.
  *
  * @param \Cake\ORM\Query $query the query to check
+ * @param string $name The clause name
  * @param array $config the config to use for adding fields
  * @return void
  */
-	protected function _aliasOrderForQuery(Query $query, array $config) {
-		$order = $query->clause('order');
-		if (!$order || !$order->count()) {
+	protected function _iterateClause(Query $query, $name = '', $config = []) {
+		$clause = $query->clause($name);
+		if (!$clause || !$clause->count()) {
 			return;
 		}
 
-		$order->iterateParts(function ($c, $field) use ($config) {
-			if (
-				strpos($field, '.') ||
-				!in_array($field, $config['fields'])
-			) {
-				$newOrder[$field] = $c;
+		$alias = $config['alias'];
+		$fields = $this->_translationFields();
+		$mainTableAlias = $config['mainTableAlias'];
+		$mainTableFields = $this->_mainFields();
+
+		$clause->iterateParts(function ($c, $field) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
+			if (!is_string($field) || strpos($field, '.')) {
 				return;
 			}
 
-			$field = "${config['alias']}.$field";
+			if (in_array($field, $fields)) {
+				$field = "$alias.$field";
+				return;
+			}
+
+			if (in_array($field, $mainTableFields)) {
+				$field = "$mainTableAlias.$field";
+			}
+		});
+	}
+
+/**
+ * Traverse over a clause to alias fields
+ *
+ * The objective here is to transparently prevent ambiguous field errors by
+ * prefixing fields with the appropriate table alias. This method currently
+ * expects to receive a where clause only.
+ *
+ * @param \Cake\ORM\Query $query the query to check
+ * @param string $name The clause name
+ * @param array $config the config to use for adding fields
+ * @return void
+ */
+	protected function _traverseClause(Query $query, $name = '', $config = []) {
+		$clause = $query->clause($name);
+		if (!$clause || !$clause->count()) {
+			return;
+		}
+
+		$alias = $config['alias'];
+		$fields = $this->_translationFields();
+		$mainTableAlias = $config['mainTableAlias'];
+		$mainTableFields = $this->_mainFields();
+
+		$clause->traverse(function ($expression) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
+			if (!($expression instanceof FieldInterface)) {
+				return;
+			}
+			$field = $expression->getField();
+			if (!$field || strpos($field, '.')) {
+				return;
+			}
+
+			if (in_array($field, $fields)) {
+				$expression->setField("$alias.$field");
+				return;
+			}
+
+			if (in_array($field, $mainTableFields)) {
+				$expression->setField("$mainTableAlias.$field");
+			}
 		});
 	}
 
@@ -319,6 +371,10 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 /**
  * Based on the passed config, return the translation table instance
  *
+ * If the table already exists in the registry - don't pass any config
+ * as that'll just lead to an exception trying to reconfigure an existing
+ * table.
+ *
  * @param array $config behavior config to use
  * @return \Cake\ORM\Table Translation table instance
  */
@@ -335,6 +391,45 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			$config['alias'],
 			['table' => $config['translationTable']]
 		);
+	}
+
+/**
+ * Lazy define and return the main table fields
+ *
+ * @return array
+ */
+	protected function _mainFields() {
+		$fields = $this->config('mainTableFields');
+
+		if ($fields) {
+			return $fields;
+		}
+
+		$table = $this->_table;
+		$fields = $table->schema()->columns();
+
+		$this->config('mainTableFields', $fields);
+		return $fields;
+	}
+
+/**
+ * Lazy define and return the translation table fields
+ *
+ * @return array
+ */
+	protected function _translationFields() {
+		$fields = $this->config('fields');
+
+		if ($fields) {
+			return $fields;
+		}
+
+		$table = $this->_translationTable();
+		$fields = $table->schema()->columns();
+		$fields = array_values(array_diff($fields, ['id', 'locale']));
+
+		$this->config('fields', $fields);
+		return $fields;
 	}
 
 }
