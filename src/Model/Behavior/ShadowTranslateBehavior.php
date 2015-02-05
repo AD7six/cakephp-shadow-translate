@@ -90,7 +90,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             'joinType' => $joinType,
             'propertyName' => 'translation',
             'conditions' => [
-                $config['alias'].'.locale' => $locale,
+                $config['alias'] . '.locale' => $locale,
             ],
         ]);
         $query->contain([$config['alias']]);
