@@ -31,9 +31,7 @@ if (file_exists($root . '/config/bootstrap.php')) {
 }
 
 require $root . '/vendor/cakephp/cakephp/tests/bootstrap.php';
-$loader->addNamespace('Cake\Test', './vendor/cakephp/cakephp/tests');
 
 Plugin::load('ShadowTranslate', [
-	'path' => dirname(dirname(__FILE__)) . DS,
-	'autoload' => true
+	'path' => dirname(dirname(__FILE__)) . DS
 ]);

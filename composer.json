@@ -11,8 +11,7 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "cakephp/cakephp": "3.0.*-dev",
-        "cakephp/plugin-installer": "*"
+        "cakephp/cakephp": "3.0.*-dev"
     },
     "autoload": {
         "psr-4": {
@@ -22,7 +21,8 @@
     "autoload-dev": {
         "psr-4": {
             "ShadowTranslate\\Test\\": "tests",
-            "Cake\\Test\\": "./vendor/cakephp/cakephp/tests"
+            "Cake\\Test\\": "./vendor/cakephp/cakephp/tests",
+            "TestApp\\": "./vendor/cakephp/cakephp/tests/test_app/TestApp"
         }
     }
 }

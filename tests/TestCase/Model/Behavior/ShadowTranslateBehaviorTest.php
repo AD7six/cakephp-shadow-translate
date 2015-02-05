@@ -5,7 +5,7 @@ use Cake\I18n\I18n;
 use Cake\ORM\Table as CakeTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
-use Cake\Test\TestCase\Model\Behavior\TranslateBehaviorTest;
+use Cake\Test\TestCase\ORM\Behavior\TranslateBehaviorTest;
 
 /**
  * Test Table class

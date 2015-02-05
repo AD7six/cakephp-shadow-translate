@@ -4,8 +4,8 @@ namespace ShadowTranslate\Model\Behavior;
 use ArrayObject;
 use Cake\Database\Expression\FieldInterface;
 use Cake\Event\Event;
-use Cake\Model\Behavior\TranslateBehavior;
 use Cake\ORM\Behavior;
+use Cake\ORM\Behavior\TranslateBehavior;
 use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
@@ -44,7 +44,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  * @param string $table the table name to use for storing each field translation
  * @return void
  */
-	public function setupFieldAssociations($fields, $table) {
+    public function setupFieldAssociations($fields, $table, $model, $strategy) {
 		$this->_table->hasMany($table, [
 			'foreignKey' => ['id'],
 			'strategy' => 'subquery',
