@@ -28,7 +28,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			'alias' => $table->alias() . 'Translations',
 			'translationTable' => $table->table() . '_translations',
 			'fields' => [],
-			'joinType' => 'LEFT'
+			'onlyTranslated' => false,
 		];
 
 		parent::__construct($table, $config);
@@ -47,14 +47,14 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  *
  * @return void
  */
-    public function setupFieldAssociations($fields, $table, $model, $strategy) {
-        $targetAlias = $this->_translationTable->alias();
-        $this->_table->hasMany($targetAlias, [
-            'foreignKey' => 'id',
-            'strategy' => $strategy,
-            'propertyName' => '_i18n',
-            'dependent' => true
-        ]);
+	public function setupFieldAssociations($fields, $table, $model, $strategy) {
+		$targetAlias = $this->_translationTable->alias();
+		$this->_table->hasMany($targetAlias, [
+			'foreignKey' => 'id',
+			'strategy' => $strategy,
+			'propertyName' => '_i18n',
+			'dependent' => true
+		]);
 	}
 
 /**
@@ -64,9 +64,10 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  *
  * @param \Cake\Event\Event $event The beforeFind event that was fired.
  * @param \Cake\ORM\Query $query Query
+ * @param \ArrayObject $options The options for the query
  * @return void
  */
-	public function beforeFind(Event $event, Query $query) {
+	public function beforeFind(Event $event, Query $query, $options) {
 		$locale = $this->locale();
 
 		if ($locale === $this->config('defaultLocale')) {
@@ -75,9 +76,15 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 
 		$config = $this->config();
 
+		if (isset($options['filterByCurrentLocale'])) {
+			$joinType = $options['filterByCurrentLocale'] ? 'INNER' : 'LEFT';
+		} else {
+			$joinType = $config['onlyTranslated'] ? 'INNER' : 'LEFT';
+		}
+
 		$this->_table->hasOne($config['alias'], [
 			'foreignKey' => ['id'],
-			'joinType' => $config['joinType'],
+			'joinType' => $joinType,
 			'propertyName' => 'translation',
 			'conditions' => [
 				$config['alias'] . '.locale' => $locale
