@@ -5,7 +5,7 @@ use Cake\I18n\I18n;
 use Cake\ORM\Table as CakeTable;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
-use Cake\Test\TestCase\Model\Behavior\TranslateBehaviorTest;
+use Cake\Test\TestCase\ORM\Behavior\TranslateBehaviorTest;
 
 /**
  * Test Table class
@@ -76,26 +76,6 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest {
 			$result,
 			'If no fields are specified, they should be derived from the schema'
 		);
-	}
-
-/**
- * testExcludeUntranslated
- *
- * @return void
- */
-	public function testExcludeUntranslated() {
-		$table = TableRegistry::get('Authors');
-		$dbConfig = $table->connection()->config('driver');
-		$usingSqlite = ($dbConfig['driver'] === 'Cake\Database\Driver\Sqlite');
-		$this->skipIf($usingSqlite, 'Sqlite does not support right joins, on which this functionality depends');
-
-		$table->addBehavior('Translate', ['joinType' => 'RIGHT']);
-		$table->locale('eng');
-		$results = $table->find('list')->toArray();
-		$expected = [
-			1 => 'May-rianoh'
-		];
-		$this->assertSame($expected, $results);
 	}
 
 /**

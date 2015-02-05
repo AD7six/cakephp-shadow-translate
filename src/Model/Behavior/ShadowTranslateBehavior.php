@@ -4,8 +4,8 @@ namespace ShadowTranslate\Model\Behavior;
 use ArrayObject;
 use Cake\Database\Expression\FieldInterface;
 use Cake\Event\Event;
-use Cake\Model\Behavior\TranslateBehavior;
 use Cake\ORM\Behavior;
+use Cake\ORM\Behavior\TranslateBehavior;
 use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
@@ -28,7 +28,7 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 			'alias' => $table->alias() . 'Translations',
 			'translationTable' => $table->table() . '_translations',
 			'fields' => [],
-			'joinType' => 'LEFT'
+			'onlyTranslated' => false,
 		];
 
 		parent::__construct($table, $config);
@@ -40,14 +40,18 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  * Don't create a hasOne association here as the join conditions are modified
  * in before find - so create/modify it there
  *
- * @param array $fields list of fields to create associations for - ignored
- * @param string $table the table name to use for storing each field translation
+ * @param array $fields - ignored
+ * @param string $table - ignored
+ * @param string $model - ignored
+ * @param string $strategy the strategy used in the _i18n association
+ *
  * @return void
  */
-	public function setupFieldAssociations($fields, $table) {
-		$this->_table->hasMany($table, [
-			'foreignKey' => ['id'],
-			'strategy' => 'subquery',
+	public function setupFieldAssociations($fields, $table, $model, $strategy) {
+		$targetAlias = $this->_translationTable->alias();
+		$this->_table->hasMany($targetAlias, [
+			'foreignKey' => 'id',
+			'strategy' => $strategy,
 			'propertyName' => '_i18n',
 			'dependent' => true
 		]);
@@ -60,9 +64,10 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  *
  * @param \Cake\Event\Event $event The beforeFind event that was fired.
  * @param \Cake\ORM\Query $query Query
+ * @param \ArrayObject $options The options for the query
  * @return void
  */
-	public function beforeFind(Event $event, Query $query) {
+	public function beforeFind(Event $event, Query $query, $options) {
 		$locale = $this->locale();
 
 		if ($locale === $this->config('defaultLocale')) {
@@ -71,9 +76,15 @@ class ShadowTranslateBehavior extends TranslateBehavior {
 
 		$config = $this->config();
 
+		if (isset($options['filterByCurrentLocale'])) {
+			$joinType = $options['filterByCurrentLocale'] ? 'INNER' : 'LEFT';
+		} else {
+			$joinType = $config['onlyTranslated'] ? 'INNER' : 'LEFT';
+		}
+
 		$this->_table->hasOne($config['alias'], [
 			'foreignKey' => ['id'],
-			'joinType' => $config['joinType'],
+			'joinType' => $joinType,
 			'propertyName' => 'translation',
 			'conditions' => [
 				$config['alias'] . '.locale' => $locale
