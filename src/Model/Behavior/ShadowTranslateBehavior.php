@@ -40,17 +40,21 @@ class ShadowTranslateBehavior extends TranslateBehavior {
  * Don't create a hasOne association here as the join conditions are modified
  * in before find - so create/modify it there
  *
- * @param array $fields list of fields to create associations for - ignored
- * @param string $table the table name to use for storing each field translation
+ * @param array $fields - ignored
+ * @param string $table - ignored
+ * @param string $model - ignored
+ * @param string $strategy the strategy used in the _i18n association
+ *
  * @return void
  */
     public function setupFieldAssociations($fields, $table, $model, $strategy) {
-		$this->_table->hasMany($table, [
-			'foreignKey' => ['id'],
-			'strategy' => 'subquery',
-			'propertyName' => '_i18n',
-			'dependent' => true
-		]);
+        $targetAlias = $this->_translationTable->alias();
+        $this->_table->hasMany($targetAlias, [
+            'foreignKey' => 'id',
+            'strategy' => $strategy,
+            'propertyName' => '_i18n',
+            'dependent' => true
+        ]);
 	}
 
 /**
