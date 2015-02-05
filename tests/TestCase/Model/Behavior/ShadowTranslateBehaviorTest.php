@@ -38,6 +38,26 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * Make sure the test Table class addBehavior method works
+     *
+     * A sanity test to make sure that the test method to add the translate
+     * behavior actually adds the shadow translate behavior. If this test
+     * fails, all other tests should also fail (because, this test class does
+     * not import core.translates fixture on which the Translate behavior
+     * test would otherwise depend).
+     *
+     * @return void
+     */
+    public function testTestSetup()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+
+        $this->assertFalse($table->hasBehavior('Translate'), 'Should not be on this table');
+        $this->assertTrue($table->hasBehavior('ShadowTranslate'), 'Should be on this table');
+    }
+
+    /**
      * Allow usage without specifying fields explicitly
      *
      * @return void
