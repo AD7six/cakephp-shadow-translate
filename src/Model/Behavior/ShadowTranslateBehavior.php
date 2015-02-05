@@ -26,8 +26,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
     {
         $config += [
             'mainTableAlias' => $table->alias(),
-            'alias' => $table->alias().'Translations',
-            'translationTable' => $table->table().'_translations',
+            'alias' => $table->alias() . 'Translations',
+            'translationTable' => $table->table() . '_translations',
             'fields' => [],
             'onlyTranslated' => false,
         ];
@@ -130,8 +130,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
         $alias = $config['mainTableAlias'];
         foreach ($this->_translationFields() as $field) {
-            if (
-                $addAll ||
+            if ($addAll ||
                 in_array($field, $select, true) ||
                 in_array("$alias.$field", $select, true)
             ) {
@@ -252,7 +251,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
         $values = $entity->extract($this->_config['fields'], true);
         $fields = array_keys($values);
-        $primaryKey = (array) $this->_table->primaryKey();
+        $primaryKey = (array)$this->_table->primaryKey();
         $key = $entity->get(current($primaryKey));
 
         $translation = $this->_translationTable()->find()
@@ -344,7 +343,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     public function groupTranslations($results)
     {
         return $results->map(function ($row) {
-            $translations = (array) $row->get('_i18n');
+            $translations = (array)$row->get('_i18n');
 
             $result = [];
             foreach ($translations as $translation) {
@@ -371,13 +370,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     protected function _bundleTranslatedFields($entity)
     {
-        $translations = (array) $entity->get('_translations');
+        $translations = (array)$entity->get('_translations');
 
         if (empty($translations) && !$entity->dirty('_translations')) {
             return;
         }
 
-        $primaryKey = (array) $this->_table->primaryKey();
+        $primaryKey = (array)$this->_table->primaryKey();
         $key = $entity->get(current($primaryKey));
 
         foreach ($translations as $lang => $translation) {
