@@ -43,12 +43,12 @@ class ShadowTranslateBehavior extends TranslateBehavior
      *
      * @param array $fields - ignored
      * @param string $table - ignored
-     * @param string $model - ignored
+     * @param string fieldConditions - ignored
      * @param string $strategy the strategy used in the _i18n association
      *
      * @return void
      */
-    public function setupFieldAssociations($fields, $table, $model, $strategy)
+    public function setupFieldAssociations($fields, $table, $fieldConditions, $strategy)
     {
         $targetAlias = $this->_translationTable->alias();
         $this->_table->hasMany($targetAlias, [
