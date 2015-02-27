@@ -192,31 +192,31 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
     }
 
-/**
- * testFindTranslations
- *
- * The parent test expects description translations in only some of the records
- * that's incompatible with the shadow-translate behavior, since the schema
- * dictates what fields to expect to be translated and doesnt permit any EAV
- * style translations
- *
- * @return void
- */
+    /**
+     * testFindTranslations
+     *
+     * The parent test expects description translations in only some of the records
+     * that's incompatible with the shadow-translate behavior, since the schema
+     * dictates what fields to expect to be translated and doesnt permit any EAV
+     * style translations
+     *
+     * @return void
+     */
     public function testFindTranslations()
     {
         $this->markTestSkipped();
     }
 
-/**
- * testConditions
- *
- * The parent test applies conditions to the translation table; the tested
- * example is `content <> ''`. This is not necessary/inappropriate for
- * the shadow translate behavior, as any conditions would apply to the
- * translation record as a whole, and not a single translated field's value
- *
- * @return void
- */
+    /**
+     * testConditions
+     *
+     * The parent test applies conditions to the translation table; the tested
+     * example is `content <> ''`. This is not necessary/inappropriate for
+     * the shadow translate behavior, as any conditions would apply to the
+     * translation record as a whole, and not a single translated field's value
+     *
+     * @return void
+     */
     public function testConditions()
     {
         $this->markTestSkipped();
