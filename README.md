@@ -10,6 +10,14 @@ replacement in terms of usage.
 
 ## Quickstart
 
+First install the plugin for your app using composer:
+
+`php composer.phar ad7six/shadow-translate:dev-master`
+
+Load the plugin by adding following statement to your app's `config/bootstrap.php`:
+
+`Plugin::load('ShadowTranslate');`
+
 The shadow translate behavior expects each table to have its own translation table. Taking the
 blog tutorial as a start point, the following table would already exist:
 
