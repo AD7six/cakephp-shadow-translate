@@ -208,17 +208,21 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
-     * testConditions
-     *
-     * The parent test applies conditions to the translation table; the tested
-     * example is `content <> ''`. This is not necessary/inappropriate for
-     * the shadow translate behavior, as any conditions would apply to the
-     * translation record as a whole, and not a single translated field's value
+     * Tests that allowEmptyTranslations takes effect
      *
      * @return void
      */
-    public function testConditions()
+    public function testEmptyTranslations()
     {
-        $this->markTestSkipped();
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', [
+            'allowEmptyTranslations' => false,
+        ]);
+        $table->locale('zzz');
+        $result = $table->get(1);
+
+        $this->assertSame('First Article', $result->title, 'The empty translation should be ignored');
+        $this->assertSame('First Article Body', $result->body, 'The empty translation should be ignored');
+        $this->assertNull($result->description);
     }
 }

@@ -290,7 +290,9 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     protected function _rowMapper($results, $locale)
     {
-        return $results->map(function ($row) {
+        $allowEmpty = $this->_config['allowEmptyTranslations'];
+
+        return $results->map(function ($row) use ($allowEmpty) {
             if ($row === null) {
                 return $row;
             }
@@ -319,7 +321,9 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 }
 
                 if ($translation[$field] !== null) {
-                    $row[$field] = $translation[$field];
+                    if ($allowEmpty || $translation[$field] !== '') {
+                        $row[$field] = $translation[$field];
+                    }
                 }
             }
 
