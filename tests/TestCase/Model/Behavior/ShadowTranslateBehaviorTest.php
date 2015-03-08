@@ -208,6 +208,19 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * testChangingReferenceName
+     *
+     * The reference name is used in the EAV implementation, it doesn't have much meaning
+     * in the shadow-translate behavior
+     *
+     * @return void
+     */
+    public function testChangingReferenceName()
+    {
+        $this->markTestSkipped();
+    }
+
+    /**
      * Tests that allowEmptyTranslations takes effect
      *
      * @return void
