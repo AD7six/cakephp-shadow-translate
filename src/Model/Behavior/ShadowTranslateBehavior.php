@@ -129,10 +129,9 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $select = $query->clause('select');
         $addAll = false;
 
-        if (!count($select) || $query->autoFields() === true) {
+        if (!count($select)) {
             $addAll = true;
-            $query->select($query->repository()->schema()->columns());
-            $select = $query->clause('select');
+            $query->autoFields(true);
         }
 
         $alias = $config['mainTableAlias'];
@@ -363,7 +362,6 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 $result[$translation['locale']] = $translation;
             }
 
-            $options = ['setter' => false, 'guard' => false];
             $row['_translations'] = $result;
             unset($row['_i18n']);
             if (is_object($row)) {
