@@ -100,11 +100,16 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 $config['translationTableAlias'] . '.locale' => $locale,
             ],
         ]);
-        $query->contain([$config['translationTableAlias']]);
 
-        $this->_addFieldsToQuery($query, $config);
-        $this->_iterateClause($query, 'order', $config);
-        $this->_traverseClause($query, 'where', $config);
+        $fieldsAdded = $this->_addFieldsToQuery($query, $config);
+        $orderByTranslatedField = $this->_iterateClause($query, 'order', $config);
+        $filteredByTranslatedField = $this->_traverseClause($query, 'where', $config);
+
+        if (!$fieldsAdded && !$orderByTranslatedField && !$filteredByTranslatedField) {
+            return;
+        }
+
+        $query->contain([$config['translationTableAlias']]);
 
         $query->formatResults(function ($results) use ($locale) {
             return $this->_rowMapper($results, $locale);
@@ -122,15 +127,14 @@ class ShadowTranslateBehavior extends TranslateBehavior
      *
      * @param \Cake\ORM\Query $query the query to check
      * @param array $config the config to use for adding fields
-     * @return void
+     * @return bool Whether a join to the translation table is required
      */
     protected function _addFieldsToQuery(Query $query, array $config)
     {
         $select = $query->clause('select');
 
         if (!$select) {
-            // rely on auto fields, no need to specify fields
-            return;
+            return true;
         }
 
         $alias = $config['mainTableAlias'];
@@ -148,6 +152,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
         if ($fieldAdded) {
             $query->select($query->aliasField('locale', $config['translationTableAlias']));
         }
+
+        return $fieldAdded;
     }
 
     /**
@@ -160,28 +166,29 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * @param \Cake\ORM\Query $query the query to check
      * @param string $name The clause name
      * @param array $config the config to use for adding fields
-     * @return void
+     * @return bool Whether a join to the translation table is required
      */
     protected function _iterateClause(Query $query, $name = '', $config = [])
     {
         $clause = $query->clause($name);
         if (!$clause || !$clause->count()) {
-            return;
+            return false;
         }
 
         $alias = $config['translationTableAlias'];
         $fields = $this->_translationFields();
         $mainTableAlias = $config['mainTableAlias'];
         $mainTableFields = $this->_mainFields();
+        $joinRequired = false;
 
-        $clause->iterateParts(function ($c, $field) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
+        $clause->iterateParts(function ($c, $field) use ($fields, $alias, $mainTableAlias, $mainTableFields, &$joinRequired) {
             if (!is_string($field) || strpos($field, '.')) {
                 return;
             }
 
             if (in_array($field, $fields)) {
+                $joinRequired = true;
                 $field = "$alias.$field";
-
                 return;
             }
 
@@ -189,6 +196,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 $field = "$mainTableAlias.$field";
             }
         });
+
+        return $joinRequired;
     }
 
     /**
@@ -201,13 +210,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * @param \Cake\ORM\Query $query the query to check
      * @param string $name The clause name
      * @param array $config the config to use for adding fields
-     * @return void
+     * @return bool Whether a join to the translation table is required
      */
     protected function _traverseClause(Query $query, $name = '', $config = [])
     {
         $clause = $query->clause($name);
         if (!$clause || !$clause->count()) {
-            return;
+            return false;
         }
 
         $alias = $config['translationTableAlias'];
@@ -215,8 +224,9 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $mainTableAlias = $config['mainTableAlias'];
         $mainTableFields = $this->_mainFields();
         $alias = $config['referenceName'];
+        $joinRequired = false;
 
-        $clause->traverse(function ($expression) use ($fields, $alias, $mainTableAlias, $mainTableFields) {
+        $clause->traverse(function ($expression) use ($fields, $alias, $mainTableAlias, $mainTableFields, &$joinRequired) {
             if (!($expression instanceof FieldInterface)) {
                 return;
             }
@@ -226,15 +236,17 @@ class ShadowTranslateBehavior extends TranslateBehavior
             }
 
             if (in_array($field, $fields)) {
-                $expression->setField("$alias.$field");
-
+                $joinRequired = true;
+                $expression->setField($alias . ".$field");
                 return;
             }
 
             if (in_array($field, $mainTableFields)) {
-                $expression->setField("$mainTableAlias.$field");
+                $expression->setField($mainTableAlias . ".$field");
             }
         });
+
+        return $joinRequired;
     }
 
     /**

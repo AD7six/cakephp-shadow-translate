@@ -81,6 +81,70 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         );
     }
 
+    public function testNoUnnecessaryJoins()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+
+        $query = $table->find();
+        $this->assertNotContains(
+            'articles_translations',
+            $query->sql(),
+            'The default locale doesn\'t need a join'
+        );
+
+        $table->locale('eng');
+
+        $query = $table->find()->select(['id']);
+        $this->assertNotContains(
+            'articles_translations',
+            $query->sql(),
+            'No translated fields, nothing to do'
+        );
+
+        $query = $table->find()->select(['title']);
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'Selecting a translated field should join the translations table'
+        );
+
+        $query = $table->find()->select(['Articles.title']);
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'Selecting an aliased translated field should join the translations table'
+        );
+
+        $query = $table->find()->select(['Other.title']);
+        $this->assertNotContains(
+            'articles_translations',
+            $query->sql(),
+            'Other isn\'t the table class with the translate behavior, nothing to do'
+        );
+
+        $query = $table->find()->select(['id'])->where(['title' => 'First Article']);
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'If the where clause includes a translated field - a join is required'
+        );
+
+        $query = $table->find()->select(['id'])->order(['title' => 'desc']);
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'If the order clause includes a translated field - a join is required'
+        );
+
+        $query = $table->find();
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'No fields means auto-fields - a join is required'
+        );
+    }
+
     /**
      * Verify it is not necessary for a translated field to exist in the master table
      *
