@@ -193,6 +193,46 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * If results are unhydrated, it should still work
+     *
+     * @return void
+     */
+    public function testUnhydratedResults()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('ShadowTranslate.ShadowTranslate');
+
+        $result = $table
+            ->find('translations')
+            ->hydrate(false)
+            ->first();
+        $this->assertArrayHasKey('title', $result);
+    }
+
+    /**
+     * A find containing another association should act the same whether translated or not
+     *
+     * @return void
+     */
+    public function testFindWithAssociations()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->belongsTo('Authors');
+
+        $table->addBehavior('Translate');
+        $table->locale('eng');
+
+        $result = $table
+            ->find('translations')
+            ->where(['Articles.id' => 1])
+            ->contain(['Authors'])
+            ->firstOrFail();
+
+        $this->assertNotNull($result->author, "There should be an author for article 1.");
+        $this->assertNotEmpty($result->_translations, "Translations can't be empty.");
+    }
+
+    /**
      * testFindTranslations
      *
      * The parent test expects description translations in only some of the records
