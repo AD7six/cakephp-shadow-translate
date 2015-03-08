@@ -210,14 +210,26 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     /**
      * testChangingReferenceName
      *
-     * The reference name is used in the EAV implementation, it doesn't have much meaning
-     * in the shadow-translate behavior
+     * The parent test is EAV specific. Test that the config reflects the referenceName -
+     * which is used to determine the the translation table/association name only in the
+     * shadow translate behavior
      *
      * @return void
      */
     public function testChangingReferenceName()
     {
-        $this->markTestSkipped();
+        $table = TableRegistry::get('Articles');
+        $table->table();
+        $table->alias('FavoritePost');
+        $table->addBehavior(
+            'Translate',
+            ['fields' => ['body'], 'referenceName' => 'Posts']
+        );
+
+        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $this->assertSame('posts_translations', $config['translationTable']);
+        $this->assertSame('PostsTranslations', $config['translationTableAlias']);
+        $this->assertSame('FavoritePost', $config['mainTableAlias']);
     }
 
     /**

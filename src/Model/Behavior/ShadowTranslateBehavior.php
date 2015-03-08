@@ -10,6 +10,7 @@ use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
+use Cake\Utility\Inflector;
 
 /**
  * ShadowTranslate behavior
@@ -24,16 +25,21 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function __construct(Table $table, array $config = [])
     {
+        if (isset($config['referenceName'])) {
+            $referenceName = $config['referenceName'];
+            $dbTable = Inflector::underscore($referenceName);
+        } else {
+            $referenceName = $table->alias();
+            $dbTable = $table->table();
+        }
+
         $config += [
             'mainTableAlias' => $table->alias(),
-            'translationTable' => $table->table() . '_translations'
+            'translationTable' => $dbTable . '_translations',
+            'translationTableAlias' => $referenceName . 'Translations'
         ];
 
         parent::__construct($table, $config);
-
-        $this->_config += [
-            'translationTableAlias' => $this->_config['referenceName'] . 'Translations'
-        ];
     }
 
     /**
