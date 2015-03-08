@@ -208,17 +208,63 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
-     * testConditions
+     * testChangingReferenceName
      *
-     * The parent test applies conditions to the translation table; the tested
-     * example is `content <> ''`. This is not necessary/inappropriate for
-     * the shadow translate behavior, as any conditions would apply to the
-     * translation record as a whole, and not a single translated field's value
+     * The parent test is EAV specific. Test that the config reflects the referenceName -
+     * which is used to determine the the translation table/association name only in the
+     * shadow translate behavior
      *
      * @return void
      */
-    public function testConditions()
+    public function testChangingReferenceName()
     {
-        $this->markTestSkipped();
+        $table = TableRegistry::get('Articles');
+        $table->table();
+        $table->alias('FavoritePost');
+        $table->addBehavior(
+            'Translate',
+            ['fields' => ['body'], 'referenceName' => 'Posts']
+        );
+
+        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $this->assertSame('posts_translations', $config['translationTable']);
+        $this->assertSame('PostsTranslations', $config['translationTableAlias']);
+        $this->assertSame('FavoritePost', $config['mainTableAlias']);
+    }
+
+    /**
+     * By default empty translations should be honored
+     *
+     * @return void
+     */
+    public function testEmptyTranslationsDefaultBehavior()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('zzz');
+        $result = $table->get(1);
+
+        $this->assertSame('', $result->title, 'The empty translation should be used');
+        $this->assertSame('', $result->body, 'The empty translation should be used');
+        $this->assertNull($result->description);
+    }
+
+    /**
+     * Tests that allowEmptyTranslations takes effect
+     *
+     * @return void
+     */
+    public function testEmptyTranslations()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', [
+            'allowEmptyTranslations' => false,
+        ]);
+        $table->locale('zzz');
+        $result = $table->get(1);
+
+        $this->assertSame('First Article', $result->title, 'The empty translation should be ignored');
+        $this->assertSame('First Article Body', $result->body, 'The empty translation should be ignored');
+        $this->assertNull($result->description);
     }
 }
