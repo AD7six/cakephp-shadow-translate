@@ -193,6 +193,23 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * If results are unhydrated, it should still work
+     *
+     * @return void
+     */
+    public function testUnhydratedResults()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('ShadowTranslate.ShadowTranslate');
+
+        $result = $table
+            ->find('translations')
+            ->hydrate(false)
+            ->first();
+        $this->assertArrayHasKey('title', $result);
+    }
+
+    /**
      * testFindTranslations
      *
      * The parent test expects description translations in only some of the records

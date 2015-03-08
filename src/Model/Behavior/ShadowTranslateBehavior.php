@@ -355,7 +355,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     public function groupTranslations($results)
     {
         return $results->map(function ($row) {
-            $translations = (array)$row->get('_i18n');
+            $translations = (array)$row['_i18n'];
 
             $result = [];
             foreach ($translations as $translation) {
@@ -364,9 +364,11 @@ class ShadowTranslateBehavior extends TranslateBehavior
             }
 
             $options = ['setter' => false, 'guard' => false];
-            $row->set('_translations', $result, $options);
+            $row['_translations'] = $result;
             unset($row['_i18n']);
-            $row->clean();
+            if (is_object($row)) {
+                $row->clean();
+            }
 
             return $row;
         });
