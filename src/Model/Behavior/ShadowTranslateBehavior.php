@@ -329,7 +329,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 }
 
                 if ($translation[$field] !== null) {
-                    if ($translation[$field] !== '') {
+                    if ($allowEmpty || $translation[$field] !== '') {
                         $row[$field] = $translation[$field];
                     }
                 }

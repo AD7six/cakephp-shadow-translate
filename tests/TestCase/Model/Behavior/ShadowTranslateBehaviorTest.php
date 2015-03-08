@@ -233,6 +233,23 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * By default empty translations should be honored
+     *
+     * @return void
+     */
+    public function testEmptyTranslationsDefaultBehavior()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('zzz');
+        $result = $table->get(1);
+
+        $this->assertSame('', $result->title, 'The empty translation should be used');
+        $this->assertSame('', $result->body, 'The empty translation should be used');
+        $this->assertNull($result->description);
+    }
+
+    /**
      * Tests that allowEmptyTranslations takes effect
      *
      * @return void
