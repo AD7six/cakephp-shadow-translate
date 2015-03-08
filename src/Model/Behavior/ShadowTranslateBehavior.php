@@ -127,16 +127,15 @@ class ShadowTranslateBehavior extends TranslateBehavior
     protected function _addFieldsToQuery(Query $query, array $config)
     {
         $select = $query->clause('select');
-        $addAll = false;
 
-        if (!count($select)) {
-            $addAll = true;
-            $query->autoFields(true);
+        if (!$select) {
+            // rely on auto fields, no need to specify fields
+            return;
         }
 
         $alias = $config['mainTableAlias'];
         foreach ($this->_translationFields() as $field) {
-            if ($addAll ||
+            if (
                 in_array($field, $select, true) ||
                 in_array("$alias.$field", $select, true)
             ) {
@@ -255,8 +254,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         if ($locale === $this->config('defaultLocale')) {
             return;
         }
-
-        $values = $entity->extract($this->_config['fields'], true);
+        $values = $entity->extract($this->_translationFields(), true);
         $fields = array_keys($values);
         $primaryKey = (array)$this->_table->primaryKey();
         $key = $entity->get(current($primaryKey));

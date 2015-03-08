@@ -60,6 +60,8 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     /**
      * Allow usage without specifying fields explicitly
      *
+     * Fields are only detected when necessary, one of those times is a fine with fields.
+     *
      * @return void
      */
     public function testAutoFieldDetection()
@@ -68,7 +70,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->addBehavior('Translate');
 
         $table->locale('eng');
-        $table->find()->first();
+        $table->find()->select(['title'])->first();
 
         $expected = ['title', 'body'];
         $result = $table->behaviors()->get('ShadowTranslate')->config('fields');
@@ -88,7 +90,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate', [
-            'alias' => 'ArticlesMoreTranslations',
+            'translationTableAlias' => 'ArticlesMoreTranslations',
             'translationTable' => 'articles_more_translations'
         ]);
 
