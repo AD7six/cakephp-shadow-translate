@@ -138,22 +138,19 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
 
         $alias = $config['mainTableAlias'];
-        $fieldAdded = false;
+        $joinRequired = false;
         foreach ($this->_translationFields() as $field) {
-            if (
-                in_array($field, $select, true) ||
-                in_array("$alias.$field", $select, true)
-            ) {
-                $fieldAdded = true;
+            if (array_intersect($select, [$field, "$alias.$field"])) {
+                $joinRequired = true;
                 $query->select($query->aliasField($field, $config['translationTableAlias']));
             }
         }
 
-        if ($fieldAdded) {
+        if ($joinRequired) {
             $query->select($query->aliasField('locale', $config['translationTableAlias']));
         }
 
-        return $fieldAdded;
+        return $joinRequired;
     }
 
     /**
