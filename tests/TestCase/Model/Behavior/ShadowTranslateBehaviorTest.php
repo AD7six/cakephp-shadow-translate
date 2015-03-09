@@ -81,6 +81,15 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         );
     }
 
+    /**
+     * Only join translations when necessary
+     *
+     * By inspecting the sql generated, verify that if there is a need for the translation
+     * table to be included in the query it is present, and when there is no clear need -
+     * that it is not.
+     *
+     * @return void
+     */
     public function testNoUnnecessaryJoins()
     {
         $table = TableRegistry::get('Articles');
