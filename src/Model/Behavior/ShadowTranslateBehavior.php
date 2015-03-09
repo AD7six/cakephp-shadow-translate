@@ -234,12 +234,12 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
             if (in_array($field, $fields)) {
                 $joinRequired = true;
-                $expression->setField($alias . ".$field");
+                $expression->setField("$alias.$field");
                 return;
             }
 
             if (in_array($field, $mainTableFields)) {
-                $expression->setField($mainTableAlias . ".$field");
+                $expression->setField("$mainTableAlias.$field");
             }
         });
 
