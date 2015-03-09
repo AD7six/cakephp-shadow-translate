@@ -12,7 +12,7 @@ replacement in terms of usage.
 
 First install the plugin for your app using composer:
 
-`php composer.phar ad7six/shadow-translate:dev-master`
+`php composer.phar require ad7six/shadow-translate:dev-master`
 
 Load the plugin by adding following statement to your app's `config/bootstrap.php`:
 
