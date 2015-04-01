@@ -4,6 +4,7 @@ namespace ShadowTranslate\Test\TestCase\Model\Behavior;
 use Cake\ORM\TableRegistry;
 use Cake\TestSuite\TestCase;
 use Cake\Test\TestCase\ORM\Behavior\TranslateBehaviorTest;
+use Cake\Utility\Hash;
 
 /**
  * ShadowTranslateBehavior test case
@@ -255,16 +256,19 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->locale('eng');
 
         $article = $table->find('all')
-            ->order(['id' => 'asc'])
+            ->order(['id' => 'desc'])
+            ->hydrate(false)
             ->toArray();
 
-        $this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+        $this->assertSame([3, 2, 1], Hash::extract($article, '{n}.id'));
 
         $article = $table->find('all')
             ->order(['title' => 'asc'])
+            ->hydrate(false)
             ->toArray();
 
-        $this->assertNotNull($article, 'There will be an exception if there\'s ambiguous sql');
+        $expected = ['Title #1', 'Title #2', 'Title #3'];
+        $this->assertSame($expected, Hash::extract($article, '{n}.title'));
     }
 
     /**

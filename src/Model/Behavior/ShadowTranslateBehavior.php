@@ -178,20 +178,19 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $mainTableFields = $this->_mainFields();
         $joinRequired = false;
 
-        $clause->iterateParts(function ($c, $field) use ($fields, $alias, $mainTableAlias, $mainTableFields, &$joinRequired) {
+        $clause->iterateParts(function ($c, &$field) use ($fields, $alias, $mainTableAlias, $mainTableFields, &$joinRequired) {
             if (!is_string($field) || strpos($field, '.')) {
-                return;
+                return $c;
             }
 
             if (in_array($field, $fields)) {
                 $joinRequired = true;
                 $field = "$alias.$field";
-                return;
-            }
-
-            if (in_array($field, $mainTableFields)) {
+            } elseif (in_array($field, $mainTableFields)) {
                 $field = "$mainTableAlias.$field";
             }
+
+            return $c;
         });
 
         return $joinRequired;
