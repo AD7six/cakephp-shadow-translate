@@ -105,7 +105,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->table();
         $table->addBehavior(
             'Translate',
-            ['fields' => ['body'], 'referenceName' => 'Posts']
+            ['referenceName' => 'Posts']
         );
 
         $config = $table->behaviors()->get('ShadowTranslate')->config();
@@ -153,7 +153,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->alias('FavoritePost');
         $table->addBehavior(
             'Translate',
-            ['fields' => ['body'], 'referenceName' => 'Posts']
+            ['referenceName' => 'Posts']
         );
 
         $config = $table->behaviors()->get('ShadowTranslate')->config();
