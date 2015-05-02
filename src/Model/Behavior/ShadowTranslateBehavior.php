@@ -286,10 +286,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 $translation->set($field, $values[$field]);
             }
         } else {
-            $translation = new Entity(['id' => $key, 'locale' => $locale] + $values, [
-                'useSetters' => false,
-                'markNew' => true
-            ]);
+            $translation = $this->_translationTable()->newEntity(
+                ['id' => $key, 'locale' => $locale] + $values,
+                [
+                    'useSetters' => false,
+                    'markNew' => true
+                ]
+            );
         }
 
         $entity->set('_i18n', array_merge($bundled, [$translation]));
