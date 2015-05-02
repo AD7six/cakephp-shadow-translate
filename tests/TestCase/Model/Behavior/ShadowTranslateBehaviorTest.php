@@ -528,7 +528,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
-     * Used in the config tests to verify that finding still works
+     * Used in the config tests to verify that a simple find still works
      *
      * @param string $tableAlias
      * @return void
@@ -538,30 +538,20 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table = TableRegistry::get($tableAlias);
         $table->locale('eng');
 
-        $query = $table
-            ->find()
-            ->where([$table->alias() . '.id' => 1]);
-        $this->assertContains(
-            'articles_translations',
-            $query->sql(),
-            sprintf('No join to the translations table for alias %s', $tableAlias)
+        $query = $table->find()->select();
+        $result = array_intersect_key(
+            $query->first()->toArray(),
+            array_flip(['title', 'body', '_locale'])
         );
-
-        $table->find()->select(['title'])->first();
-
         $expected = [
-            'id' => 1,
-            'author_id' => 1,
             'title' => 'Title #1',
             'body' => 'Content #1',
-            'published' => 'Y',
             '_locale' => 'eng'
         ];
-        $result = $query->firstOrFail()->toArray();
         $this->assertSame(
             $expected,
             $result,
-            sprintf('Table instance %s did not return expected results', $tableAlias)
+            'Title and body are translated values, but don\'t match'
         );
     }
 }
