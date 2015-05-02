@@ -69,10 +69,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->table();
-        $table->addBehavior(
-            'Translate',
-            ['fields' => ['body']]
-        );
+        $table->addBehavior('Translate');
 
         $config = $table->behaviors()->get('ShadowTranslate')->config();
         $wantedKeys = [
@@ -349,7 +346,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testDelete()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $article = $table->find()->first();
         $this->assertTrue($table->delete($article));
 
@@ -367,7 +364,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testNoAmbiguousFields()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $table->locale('eng');
 
         $article = $table->find('all')
@@ -391,7 +388,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testNoAmbiguousConditions()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $table->locale('eng');
 
         $article = $table->find('all')
@@ -415,7 +412,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testNoAmbiguousOrder()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $table->locale('eng');
 
         $article = $table->find('all')
