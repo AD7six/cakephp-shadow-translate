@@ -89,6 +89,8 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'hasManyAlias' => 'ArticlesTranslations'
         ];
         $this->assertSame($expected, $config, 'Used aliases should match the main table object');
+
+        $this->_testFind();
     }
 
     /**
@@ -134,6 +136,8 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $translationTable->registryAlias(),
             'It should be a different object to the one in the no-plugin prefix'
         );
+
+        $this->_testFind('SomeRandomPlugin.Articles');
     }
 
     /**
@@ -170,9 +174,9 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'hasManyAlias' => 'FavoritePostTranslations'
         ];
         $this->assertSame($expected, $config, 'Used aliases should match the main table object');
+
+        $this->_testFind();
     }
-
-
 
     /**
      * Allow usage without specifying fields explicitly
@@ -521,5 +525,43 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertSame('First Article', $result->title, 'The empty translation should be ignored');
         $this->assertSame('First Article Body', $result->body, 'The empty translation should be ignored');
         $this->assertNull($result->description);
+    }
+
+    /**
+     * Used in the config tests to verify that finding still works
+     *
+     * @param string $tableAlias
+     * @return void
+     */
+    protected function _testFind($tableAlias = 'Articles')
+    {
+        $table = TableRegistry::get($tableAlias);
+        $table->locale('eng');
+
+        $query = $table
+            ->find()
+            ->where([$table->alias() . '.id' => 1]);
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            sprintf('No join to the translations table for alias %s', $tableAlias)
+        );
+
+        $table->find()->select(['title'])->first();
+
+        $expected = [
+            'id' => 1,
+            'author_id' => 1,
+            'title' => 'Title #1',
+            'body' => 'Content #1',
+            'published' => 'Y',
+            '_locale' => 'eng'
+        ];
+        $result = $query->firstOrFail()->toArray();
+        $this->assertSame(
+            $expected,
+            $result,
+            sprintf('Table instance %s did not return expected results', $tableAlias)
+        );
     }
 }
