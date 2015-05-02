@@ -340,12 +340,17 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->addBehavior('Translate');
         $table->locale('eng');
 
-        $result = $table
+        $query = $table
             ->find('translations')
             ->where(['Articles.id' => 1])
-            ->contain(['Authors'])
-            ->firstOrFail();
+            ->contain(['Authors']);
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'There should be a join to the translations table'
+        );
 
+        $result = $query->firstOrFail();
         $this->assertNotNull($result->author, "There should be an author for article 1.");
         $this->assertNotEmpty($result->_translations, "Translations can't be empty.");
     }
