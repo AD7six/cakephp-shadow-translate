@@ -273,11 +273,12 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $values = $entity->extract($this->_translationFields(), true);
         $fields = array_keys($values);
         $primaryKey = (array)$this->_table->primaryKey();
-        $key = $entity->get(current($primaryKey));
+        $id = $entity->get(current($primaryKey));
+        $where = compact('id', 'locale');
 
         $translation = $this->_translationTable()->find()
             ->select(array_merge(['id', 'locale'], $fields))
-            ->where(['locale' => $locale, 'id' => $key])
+            ->where($where)
             ->bufferResults(false)
             ->first();
 
@@ -287,7 +288,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             }
         } else {
             $translation = $this->_translationTable()->newEntity(
-                ['id' => $key, 'locale' => $locale] + $values,
+                $where + $values,
                 [
                     'useSetters' => false,
                     'markNew' => true
