@@ -111,6 +111,32 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'No translated fields, nothing to do'
         );
 
+        $query = $table->find()->select(['Other.title']);
+        $this->assertNotContains(
+            'articles_translations',
+            $query->sql(),
+            'Other isn\'t the table class with the translate behavior, nothing to do'
+        );
+    }
+
+    /**
+     * Join when translations are necessary
+     *
+     * @return void
+     */
+    public function testNecessaryJoinsSelect()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
+
+        $query = $table->find();
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'No fields specified, means select all fields - translated included'
+        );
+
         $query = $table->find()->select(['title']);
         $this->assertContains(
             'articles_translations',
@@ -124,13 +150,18 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $query->sql(),
             'Selecting an aliased translated field should join the translations table'
         );
+    }
 
-        $query = $table->find()->select(['Other.title']);
-        $this->assertNotContains(
-            'articles_translations',
-            $query->sql(),
-            'Other isn\'t the table class with the translate behavior, nothing to do'
-        );
+    /**
+     * Join when translations are necessary
+     *
+     * @return void
+     */
+    public function testNecessaryJoinsWhere()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
 
         $query = $table->find()->select(['id'])->where(['title' => 'First Article']);
         $this->assertContains(
@@ -138,6 +169,18 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $query->sql(),
             'If the where clause includes a translated field - a join is required'
         );
+    }
+
+    /**
+     * Join when translations are necessary
+     *
+     * @return void
+     */
+    public function testNecessaryJoinsOrder()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
 
         $query = $table->find()->select(['id'])->order(['title' => 'desc']);
         $this->assertContains(
