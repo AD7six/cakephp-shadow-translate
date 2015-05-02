@@ -71,7 +71,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->table();
         $table->addBehavior(
             'Translate',
-            ['fields' => ['body'], 'referenceName' => 'Posts']
+            ['fields' => ['body']]
         );
 
         $config = $table->behaviors()->get('ShadowTranslate')->config();
@@ -89,6 +89,51 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'hasManyAlias' => 'ArticlesTranslations'
         ];
         $this->assertSame($expected, $config, 'Used aliases should match the main table object');
+    }
+
+    /**
+     * Check things are setup correctly by default for plugin models
+     *
+     * @return void
+     */
+    public function testDefaultPluginAliases()
+    {
+        $table = TableRegistry::get(
+            'SomeRandomPlugin.Articles',
+            ['className' => 'ShadowTranslate\Test\TestCase\Model\Behavior\Table']
+        );
+
+        $table->table();
+        $table->addBehavior(
+            'Translate',
+            ['fields' => ['body'], 'referenceName' => 'Posts']
+        );
+
+        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $wantedKeys = [
+            'translationTable',
+            'mainTableAlias',
+            'hasOneAlias',
+            'hasManyAlias',
+        ];
+        $config = array_intersect_key($config, array_flip($wantedKeys));
+        $expected = [
+            'translationTable' => 'SomeRandomPlugin.ArticlesTranslations',
+            'mainTableAlias' => 'Articles',
+            'hasOneAlias' => 'ArticlesTranslationsOne',
+            'hasManyAlias' => 'ArticlesTranslations'
+        ];
+        $this->assertSame($expected, $config, 'Used aliases should match the main table object');
+
+        $exists = TableRegistry::exists('SomeRandomPlugin.ArticlesTranslations');
+        $this->assertTrue($exists, 'The behavior should have populated this key with a table object');
+
+        $translationTable = TableRegistry::get('SomeRandomPlugin.ArticlesTranslations');
+        $this->assertSame(
+            'SomeRandomPlugin.ArticlesTranslations',
+            $translationTable->registryAlias(),
+            'It should be a different object to the one in the no-plugin prefix'
+        );
     }
 
     /**
