@@ -371,6 +371,40 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * Check things are setup correctly by default
+     *
+     * The hasOneAlias is used for the has-one translation, the hasManyAlias is used
+     * with findTranslations
+     *
+     * @return void
+     */
+    public function testDefaultAliases()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->table();
+        $table->addBehavior(
+            'Translate',
+            ['fields' => ['body'], 'referenceName' => 'Posts']
+        );
+
+        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $wantedKeys = [
+            'translationTable',
+            'mainTableAlias',
+            'hasOneAlias',
+            'hasManyAlias',
+        ];
+        $config = array_intersect_key($config, array_flip($wantedKeys));
+        $expected = [
+            'translationTable' => 'ArticlesTranslations',
+            'mainTableAlias' => 'Articles',
+            'hasOneAlias' => 'ArticlesTranslationsOne',
+            'hasManyAlias' => 'ArticlesTranslations'
+        ];
+        $this->assertSame($expected, $config, 'Used aliases should match the main table object');
+    }
+
+    /**
      * testChangingReferenceName
      *
      * The parent test is EAV specific. Test that the config reflects the referenceName -
@@ -390,9 +424,20 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         );
 
         $config = $table->behaviors()->get('ShadowTranslate')->config();
-        $this->assertSame('posts_translations', $config['translationTable']);
-        $this->assertSame('PostsTranslations', $config['translationTableAlias']);
-        $this->assertSame('FavoritePost', $config['mainTableAlias']);
+        $wantedKeys = [
+            'translationTable',
+            'mainTableAlias',
+            'hasOneAlias',
+            'hasManyAlias',
+        ];
+        $config = array_intersect_key($config, array_flip($wantedKeys));
+        $expected = [
+            'translationTable' => 'ArticlesTranslations',
+            'mainTableAlias' => 'FavoritePost',
+            'hasOneAlias' => 'FavoritePostTranslationsOne',
+            'hasManyAlias' => 'FavoritePostTranslations'
+        ];
+        $this->assertSame($expected, $config, 'Used aliases should match the main table object');
     }
 
     /**

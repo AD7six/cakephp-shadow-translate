@@ -25,18 +25,17 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function __construct(Table $table, array $config = [])
     {
-        if (isset($config['referenceName'])) {
-            $referenceName = $config['referenceName'];
-            $dbTable = Inflector::underscore($referenceName);
-        } else {
-            $referenceName = $table->alias();
-            $dbTable = $table->table();
-        }
+        $tableAlias = $table->alias();
+        $translationAlias = $tableAlias . 'Translations';
 
         $config += [
-            'mainTableAlias' => $table->alias(),
-            'translationTable' => $dbTable . '_translations',
-            'translationTableAlias' => $referenceName . 'Translations'
+            'mainTableAlias' => $tableAlias,
+            'translationTable' => $table->registryAlias() . 'Translations',
+            'translationTableConfig' => [
+                'connection' => $table->connection()->configName()
+            ],
+            'hasOneAlias' => $translationAlias . 'One',
+            'hasManyAlias' => $translationAlias
         ];
 
         parent::__construct($table, $config);
@@ -57,8 +56,10 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function setupFieldAssociations($fields, $table, $fieldConditions, $strategy)
     {
-        $targetAlias = $this->_translationTable->alias();
-        $this->_table->hasMany($targetAlias, [
+        $config = $this->config();
+
+        $this->_table->hasMany($config['translationTable'], [
+            'className' => $config['translationTable'],
             'foreignKey' => 'id',
             'strategy' => $strategy,
             'propertyName' => '_i18n',
@@ -92,12 +93,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
             $joinType = $config['onlyTranslated'] ? 'INNER' : 'LEFT';
         }
 
-        $this->_table->hasOne($config['translationTableAlias'], [
+        $this->_table->hasOne($config['hasOneAlias'], [
             'foreignKey' => ['id'],
             'joinType' => $joinType,
             'propertyName' => 'translation',
+            'className' => $config['translationTable'],
             'conditions' => [
-                $config['translationTableAlias'] . '.locale' => $locale,
+                $config['hasOneAlias'] . '.locale' => $locale,
             ],
         ]);
 
@@ -109,7 +111,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             return;
         }
 
-        $query->contain([$config['translationTableAlias']]);
+        $query->contain([$config['hasOneAlias']]);
 
         $query->formatResults(function ($results) use ($locale) {
             return $this->_rowMapper($results, $locale);
@@ -142,12 +144,12 @@ class ShadowTranslateBehavior extends TranslateBehavior
         foreach ($this->_translationFields() as $field) {
             if (array_intersect($select, [$field, "$alias.$field"])) {
                 $joinRequired = true;
-                $query->select($query->aliasField($field, $config['translationTableAlias']));
+                $query->select($query->aliasField($field, $config['hasOneAlias']));
             }
         }
 
         if ($joinRequired) {
-            $query->select($query->aliasField('locale', $config['translationTableAlias']));
+            $query->select($query->aliasField('locale', $config['hasOneAlias']));
         }
 
         return $joinRequired;
@@ -172,7 +174,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             return false;
         }
 
-        $alias = $config['translationTableAlias'];
+        $alias = $config['hasOneAlias'];
         $fields = $this->_translationFields();
         $mainTableAlias = $config['mainTableAlias'];
         $mainTableFields = $this->_mainFields();
@@ -216,7 +218,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             return false;
         }
 
-        $alias = $config['translationTableAlias'];
+        $alias = $config['hasOneAlias'];
         $fields = $this->_translationFields();
         $mainTableAlias = $config['mainTableAlias'];
         $mainTableFields = $this->_mainFields();
@@ -432,13 +434,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
             $config = $this->config();
         }
 
-        if (TableRegistry::exists($config['translationTableAlias'])) {
-            return TableRegistry::get($config['translationTableAlias']);
+        if (TableRegistry::exists($config['translationTable'])) {
+            return TableRegistry::get($config['translationTable']);
         }
 
         return TableRegistry::get(
-            $config['translationTableAlias'],
-            ['table' => $config['translationTable']]
+            $config['translationTable'],
+            $config['translationTableConfig']
         );
     }
 
