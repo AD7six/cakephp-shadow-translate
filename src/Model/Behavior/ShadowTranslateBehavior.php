@@ -61,7 +61,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     {
         $config = $this->config();
 
-        $this->_table->hasMany($config['translationTable'], [
+        $this->_table->hasMany($config['hasManyAlias'], [
             'className' => $config['translationTable'],
             'foreignKey' => 'id',
             'strategy' => $strategy,
