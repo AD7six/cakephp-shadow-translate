@@ -34,13 +34,11 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
         list($plugin) = pluginSplit($tableRegistryAlias, true);
 
-        $translationAlias = $tableAlias . 'Translations';
-
         $config += [
             'mainTableAlias' => $tableAlias,
             'translationTable' => $plugin . $tableReferenceName . 'Translations',
-            'hasOneAlias' => $translationAlias . 'One',
-            'hasManyAlias' => $translationAlias
+            'hasOneAlias' => $tableAlias . 'Translation',
+            'hasManyAlias' => $tableAlias . 'Translations'
         ];
 
         parent::__construct($table, $config);

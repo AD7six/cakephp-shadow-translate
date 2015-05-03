@@ -82,7 +82,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $expected = [
             'translationTable' => 'ArticlesTranslations',
             'mainTableAlias' => 'Articles',
-            'hasOneAlias' => 'ArticlesTranslationsOne',
+            'hasOneAlias' => 'ArticlesTranslation',
             'hasManyAlias' => 'ArticlesTranslations'
         ];
         $this->assertSame($expected, $config, 'Used aliases should match the main table object');
@@ -116,7 +116,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $expected = [
             'translationTable' => 'SomeRandomPlugin.ArticlesTranslations',
             'mainTableAlias' => 'Articles',
-            'hasOneAlias' => 'ArticlesTranslationsOne',
+            'hasOneAlias' => 'ArticlesTranslation',
             'hasManyAlias' => 'ArticlesTranslations'
         ];
         $this->assertSame($expected, $config, 'Used aliases should match the main table object');
@@ -164,7 +164,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $expected = [
             'translationTable' => 'PostsTranslations',
             'mainTableAlias' => 'Articles',
-            'hasOneAlias' => 'ArticlesTranslationsOne',
+            'hasOneAlias' => 'ArticlesTranslation',
             'hasManyAlias' => 'ArticlesTranslations'
         ];
         $this->assertSame($expected, $config, 'The translationTable key should be derived from referenceName');
