@@ -103,10 +103,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         );
 
         $table->table();
-        $table->addBehavior(
-            'Translate',
-            ['referenceName' => 'Posts']
-        );
+        $table->addBehavior('Translate');
 
         $config = $table->behaviors()->get('ShadowTranslate')->config();
         $wantedKeys = [
