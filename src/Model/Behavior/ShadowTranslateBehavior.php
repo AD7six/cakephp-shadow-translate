@@ -26,13 +26,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
     public function __construct(Table $table, array $config = [])
     {
         $tableAlias = $table->alias();
-        $tableRegistryAlias = $table->registryAlias();
+        list($plugin) = pluginSplit($table->registryAlias(), true);
+
         if (isset($config['referenceName'])) {
             $tableReferenceName = $config['referenceName'];
         } else {
             $tableReferenceName = $this->_referenceName($table);
         }
-        list($plugin) = pluginSplit($tableRegistryAlias, true);
 
         $config += [
             'mainTableAlias' => $tableAlias,
