@@ -378,7 +378,6 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $result,
             'The copy record should also be translated'
         );
-       $query = $table->find()->contain('Copy');
     }
 
     /**

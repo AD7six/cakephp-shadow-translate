@@ -39,7 +39,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 'connection' => $table->connection()->configName()
             ],
             'hasOneAlias' => $translationAlias . 'One',
-            'hasManyAlias' => $translationAlias
+            'hasManyAlias' => $translationAlias,
+            'strategy' => 'select'
         ];
 
         parent::__construct($table, $config);
