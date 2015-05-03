@@ -529,7 +529,14 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         );
 
         $result = $query->firstOrFail();
+
         $this->assertNotNull($result->author, "There should be an author for article 1.");
+        $expected = [
+            'id' => 1,
+            'name' => 'mariano'
+        ];
+        $this->assertSame($expected, $result->author->toArray());
+
         $this->assertNotEmpty($result->_translations, "Translations can't be empty.");
     }
 
