@@ -334,6 +334,51 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * Setup a contrived self join and make sure both records are translated
+     *
+     * Different locales are used on each table object just to make any resulting
+     * confusion easier to identify as neither the original or translated values
+     * overlap between the two records.
+     *
+     * @return void
+     */
+    public function testSelfJoin()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
+
+        $table->belongsTo('Copy', ['className' => 'Articles', 'foreignKey' => 'author_id']);
+        $table->Copy->addBehavior(
+            'ShadowTranslate.ShadowTranslate',
+            ['translationTable' => 'ArticlesTranslations'] // this shouldn't be necessary to specify
+        );
+        $table->Copy->locale('deu');
+
+        $query = $table->find()
+            ->where(['Articles.id' => 3])
+            ->contain('Copy')
+            ->select(['title', 'body', 'Copy.title', 'Copy.body']);
+        $result = $query->first()->toArray();
+        $expected = [
+            'title' => 'Title #3',
+            'body' => 'Content #3',
+            'copy' => [
+                'title' => 'Titel #1',
+                'body' => 'Inhalt #1',
+                '_locale' => 'deu'
+            ],
+            '_locale' => 'eng'
+        ];
+        $this->assertSame(
+            $expected,
+            $result,
+            'The copy record should also be translated'
+        );
+       $query = $table->find()->contain('Copy');
+    }
+
+    /**
      * Verify it is not necessary for a translated field to exist in the master table
      *
      * @return void
