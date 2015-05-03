@@ -218,29 +218,6 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
-     * An aliased table should still point at the right translations table
-     *
-     * @return void
-     */
-    public function testTranslationAliasedTableConfig()
-    {
-        $table = TableRegistry::get('Articles');
-        $table->alias('Stuffs');
-        $table->addBehavior('Translate');
-
-        $exists = TableRegistry::exists('ArticlesTranslations');
-        $this->assertTrue($exists, 'The table registry should have an object in this key now');
-
-        $translationTable = TableRegistry::get('ArticlesTranslations');
-        $this->assertSame(
-            'articles_translations',
-            $translationTable->table(),
-            'Changing the table alias should not change the translation table'
-        );
-        $this->assertSame('StuffsTranslations', $translationTable->alias());
-    }
-
-    /**
      * Only join translations when necessary
      *
      * By inspecting the sql generated, verify that if there is a need for the translation
