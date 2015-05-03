@@ -354,20 +354,26 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
 
         $query = $table->find()
             ->where(['Articles.id' => 3])
-            ->contain('Copy')
-            ->select(['title', 'body', 'Copy.title', 'Copy.body']);
+            ->contain('Copy');
+
         $result = $query->first()->toArray();
         $expected = [
+            'id' => 3,
+            'author_id' => 1,
             'title' => 'Title #3',
             'body' => 'Content #3',
+            'published' => 'Y',
             'copy' => [
+                'id' => '1',
+                'author_id' => 1,
                 'title' => 'Titel #1',
                 'body' => 'Inhalt #1',
+                'published' => 'Y',
                 '_locale' => 'deu'
             ],
             '_locale' => 'eng'
         ];
-        $this->assertSame(
+        $this->assertEquals(
             $expected,
             $result,
             'The copy record should also be translated'
