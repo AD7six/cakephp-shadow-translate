@@ -349,10 +349,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->locale('eng');
 
         $table->belongsTo('Copy', ['className' => 'Articles', 'foreignKey' => 'author_id']);
-        $table->Copy->addBehavior(
-            'ShadowTranslate.ShadowTranslate',
-            ['translationTable' => 'ArticlesTranslations'] // this shouldn't be necessary to specify
-        );
+        $table->Copy->addBehavior('ShadowTranslate.ShadowTranslate');
         $table->Copy->locale('deu');
 
         $query = $table->find()
