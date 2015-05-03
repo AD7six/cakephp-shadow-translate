@@ -38,7 +38,6 @@ class ShadowTranslateBehavior extends TranslateBehavior
             'mainTableAlias' => $tableAlias,
             'translationTable' => $plugin . $tableReferenceName . 'Translations',
             'hasOneAlias' => $tableAlias . 'Translation',
-            'hasManyAlias' => $tableAlias . 'Translations'
         ];
 
         parent::__construct($table, $config);
@@ -61,7 +60,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     {
         $config = $this->config();
 
-        $this->_table->hasMany($config['hasManyAlias'], [
+        $this->_table->hasMany($config['translationTable'], [
             'className' => $config['translationTable'],
             'foreignKey' => 'id',
             'strategy' => $strategy,

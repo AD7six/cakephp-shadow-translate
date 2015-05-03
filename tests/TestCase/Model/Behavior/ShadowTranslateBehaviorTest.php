@@ -60,7 +60,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     /**
      * Check things are setup correctly by default
      *
-     * The hasOneAlias is used for the has-one translation, the hasManyAlias is used
+     * The hasOneAlias is used for the has-one translation, the translationTable is used
      * with findTranslations
      *
      * @return void
@@ -75,15 +75,13 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $wantedKeys = [
             'translationTable',
             'mainTableAlias',
-            'hasOneAlias',
-            'hasManyAlias',
+            'hasOneAlias'
         ];
         $config = array_intersect_key($config, array_flip($wantedKeys));
         $expected = [
             'translationTable' => 'ArticlesTranslations',
             'mainTableAlias' => 'Articles',
-            'hasOneAlias' => 'ArticlesTranslation',
-            'hasManyAlias' => 'ArticlesTranslations'
+            'hasOneAlias' => 'ArticlesTranslation'
         ];
         $this->assertSame($expected, $config, 'Used aliases should match the main table object');
 
@@ -109,15 +107,13 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $wantedKeys = [
             'translationTable',
             'mainTableAlias',
-            'hasOneAlias',
-            'hasManyAlias',
+            'hasOneAlias'
         ];
         $config = array_intersect_key($config, array_flip($wantedKeys));
         $expected = [
             'translationTable' => 'SomeRandomPlugin.ArticlesTranslations',
             'mainTableAlias' => 'Articles',
-            'hasOneAlias' => 'ArticlesTranslation',
-            'hasManyAlias' => 'ArticlesTranslations'
+            'hasOneAlias' => 'ArticlesTranslation'
         ];
         $this->assertSame($expected, $config, 'Used aliases should match the main table object');
 
@@ -156,16 +152,14 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $wantedKeys = [
             'translationTable',
             'mainTableAlias',
-            'hasOneAlias',
-            'hasManyAlias',
+            'hasOneAlias'
         ];
 
         $config = array_intersect_key($config, array_flip($wantedKeys));
         $expected = [
             'translationTable' => 'PostsTranslations',
             'mainTableAlias' => 'Articles',
-            'hasOneAlias' => 'ArticlesTranslation',
-            'hasManyAlias' => 'ArticlesTranslations'
+            'hasOneAlias' => 'ArticlesTranslation'
         ];
         $this->assertSame($expected, $config, 'The translationTable key should be derived from referenceName');
     }
