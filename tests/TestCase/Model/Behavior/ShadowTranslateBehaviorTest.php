@@ -150,7 +150,6 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->table();
-        $table->alias('FavoritePost');
         $table->addBehavior(
             'Translate',
             ['referenceName' => 'Posts']
@@ -163,16 +162,15 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'hasOneAlias',
             'hasManyAlias',
         ];
+
         $config = array_intersect_key($config, array_flip($wantedKeys));
         $expected = [
-            'translationTable' => 'ArticlesTranslations',
-            'mainTableAlias' => 'FavoritePost',
-            'hasOneAlias' => 'FavoritePostTranslationsOne',
-            'hasManyAlias' => 'FavoritePostTranslations'
+            'translationTable' => 'PostsTranslations',
+            'mainTableAlias' => 'Articles',
+            'hasOneAlias' => 'ArticlesTranslationsOne',
+            'hasManyAlias' => 'ArticlesTranslations'
         ];
-        $this->assertSame($expected, $config, 'Used aliases should match the main table object');
-
-        $this->_testFind();
+        $this->assertSame($expected, $config, 'The translationTable key should be derived from referenceName');
     }
 
     /**

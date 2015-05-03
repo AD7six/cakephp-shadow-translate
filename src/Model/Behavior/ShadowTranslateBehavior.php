@@ -27,7 +27,11 @@ class ShadowTranslateBehavior extends TranslateBehavior
     {
         $tableAlias = $table->alias();
         $tableRegistryAlias = $table->registryAlias();
-        $tableReferenceName = $this->_referenceName($table);
+        if (isset($config['referenceName'])) {
+            $tableReferenceName = $config['referenceName'];
+        } else {
+            $tableReferenceName = $this->_referenceName($table);
+        }
         list($plugin) = pluginSplit($tableRegistryAlias, true);
 
         $translationAlias = $tableAlias . 'Translations';
