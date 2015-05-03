@@ -39,9 +39,6 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $config += [
             'mainTableAlias' => $tableAlias,
             'translationTable' => $plugin . $tableReferenceName . 'Translations',
-            'translationTableConfig' => [
-                'connection' => $table->connection()->configName()
-            ],
             'hasOneAlias' => $translationAlias . 'One',
             'hasManyAlias' => $translationAlias
         ];
@@ -446,14 +443,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             $config = $this->config();
         }
 
-        if (TableRegistry::exists($config['translationTable'])) {
-            return TableRegistry::get($config['translationTable']);
-        }
-
-        return TableRegistry::get(
-            $config['translationTable'],
-            $config['translationTableConfig']
-        );
+        return TableRegistry::get($config['translationTable']);
     }
 
     /**
