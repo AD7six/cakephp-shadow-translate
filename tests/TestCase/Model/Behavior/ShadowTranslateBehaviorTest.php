@@ -59,6 +59,113 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * Check things are setup correctly by default
+     *
+     * The hasOneAlias is used for the has-one translation, the translationTable is used
+     * with findTranslations
+     *
+     * @return void
+     */
+    public function testDefaultAliases()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->table();
+        $table->addBehavior('Translate');
+
+        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $wantedKeys = [
+            'translationTable',
+            'mainTableAlias',
+            'hasOneAlias'
+        ];
+        $config = array_intersect_key($config, array_flip($wantedKeys));
+        $expected = [
+            'translationTable' => 'ArticlesTranslations',
+            'mainTableAlias' => 'Articles',
+            'hasOneAlias' => 'ArticlesTranslation'
+        ];
+        $this->assertSame($expected, $config, 'Used aliases should match the main table object');
+
+        $this->_testFind();
+    }
+
+    /**
+     * Check things are setup correctly by default for plugin models
+     *
+     * @return void
+     */
+    public function testDefaultPluginAliases()
+    {
+        $table = TableRegistry::get(
+            'SomeRandomPlugin.Articles',
+            ['className' => 'ShadowTranslate\Test\TestCase\Model\Behavior\Table']
+        );
+
+        $table->table();
+        $table->addBehavior('Translate');
+
+        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $wantedKeys = [
+            'translationTable',
+            'mainTableAlias',
+            'hasOneAlias'
+        ];
+        $config = array_intersect_key($config, array_flip($wantedKeys));
+        $expected = [
+            'translationTable' => 'SomeRandomPlugin.ArticlesTranslations',
+            'mainTableAlias' => 'Articles',
+            'hasOneAlias' => 'ArticlesTranslation'
+        ];
+        $this->assertSame($expected, $config, 'Used aliases should match the main table object');
+
+        $exists = TableRegistry::exists('SomeRandomPlugin.ArticlesTranslations');
+        $this->assertTrue($exists, 'The behavior should have populated this key with a table object');
+
+        $translationTable = TableRegistry::get('SomeRandomPlugin.ArticlesTranslations');
+        $this->assertSame(
+            'SomeRandomPlugin.ArticlesTranslations',
+            $translationTable->registryAlias(),
+            'It should be a different object to the one in the no-plugin prefix'
+        );
+
+        $this->_testFind('SomeRandomPlugin.Articles');
+    }
+
+    /**
+     * testChangingReferenceName
+     *
+     * The parent test is EAV specific. Test that the config reflects the referenceName -
+     * which is used to determine the the translation table/association name only in the
+     * shadow translate behavior
+     *
+     * @return void
+     */
+    public function testChangingReferenceName()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->table();
+        $table->addBehavior(
+            'Translate',
+            ['referenceName' => 'Posts']
+        );
+
+        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $wantedKeys = [
+            'translationTable',
+            'mainTableAlias',
+            'hasOneAlias'
+        ];
+
+        $config = array_intersect_key($config, array_flip($wantedKeys));
+        $expected = [
+            'translationTable' => 'PostsTranslations',
+            'mainTableAlias' => 'Articles',
+            'hasOneAlias' => 'ArticlesTranslation'
+        ];
+        $this->assertSame($expected, $config, 'The translationTable key should be derived from referenceName');
+    }
+
+    /**
      * Allow usage without specifying fields explicitly
      *
      * Fields are only detected when necessary, one of those times is a fine with fields.
@@ -80,6 +187,24 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $result,
             'If no fields are specified, they should be derived from the schema'
         );
+    }
+
+    /**
+     * testTranslationTableConfig
+     *
+     * @return void
+     */
+    public function testTranslationTableConfig()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+
+        $exists = TableRegistry::exists('ArticlesTranslations');
+        $this->assertTrue($exists, 'The table registry should have an object in this key now');
+
+        $translationTable = TableRegistry::get('ArticlesTranslations');
+        $this->assertSame('articles_translations', $translationTable->table());
+        $this->assertSame('ArticlesTranslations', $translationTable->alias());
     }
 
     /**
@@ -112,6 +237,32 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'No translated fields, nothing to do'
         );
 
+        $query = $table->find()->select(['Other.title']);
+        $this->assertNotContains(
+            'articles_translations',
+            $query->sql(),
+            'Other isn\'t the table class with the translate behavior, nothing to do'
+        );
+    }
+
+    /**
+     * Join when translations are necessary
+     *
+     * @return void
+     */
+    public function testNecessaryJoinsSelect()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
+
+        $query = $table->find();
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'No fields specified, means select all fields - translated included'
+        );
+
         $query = $table->find()->select(['title']);
         $this->assertContains(
             'articles_translations',
@@ -125,13 +276,18 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $query->sql(),
             'Selecting an aliased translated field should join the translations table'
         );
+    }
 
-        $query = $table->find()->select(['Other.title']);
-        $this->assertNotContains(
-            'articles_translations',
-            $query->sql(),
-            'Other isn\'t the table class with the translate behavior, nothing to do'
-        );
+    /**
+     * Join when translations are necessary
+     *
+     * @return void
+     */
+    public function testNecessaryJoinsWhere()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
 
         $query = $table->find()->select(['id'])->where(['title' => 'First Article']);
         $this->assertContains(
@@ -139,6 +295,18 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $query->sql(),
             'If the where clause includes a translated field - a join is required'
         );
+    }
+
+    /**
+     * Join when translations are necessary
+     *
+     * @return void
+     */
+    public function testNecessaryJoinsOrder()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
 
         $query = $table->find()->select(['id'])->order(['title' => 'desc']);
         $this->assertContains(
@@ -152,6 +320,53 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'articles_translations',
             $query->sql(),
             'No fields means auto-fields - a join is required'
+        );
+    }
+
+    /**
+     * Setup a contrived self join and make sure both records are translated
+     *
+     * Different locales are used on each table object just to make any resulting
+     * confusion easier to identify as neither the original or translated values
+     * overlap between the two records.
+     *
+     * @return void
+     */
+    public function testSelfJoin()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
+
+        $table->belongsTo('Copy', ['className' => 'Articles', 'foreignKey' => 'author_id']);
+        $table->Copy->addBehavior('ShadowTranslate.ShadowTranslate');
+        $table->Copy->locale('deu');
+
+        $query = $table->find()
+            ->where(['Articles.id' => 3])
+            ->contain('Copy');
+
+        $result = $query->first()->toArray();
+        $expected = [
+            'id' => 3,
+            'author_id' => 1,
+            'title' => 'Title #3',
+            'body' => 'Content #3',
+            'published' => 'Y',
+            'copy' => [
+                'id' => '1',
+                'author_id' => 1,
+                'title' => 'Titel #1',
+                'body' => 'Inhalt #1',
+                'published' => 'Y',
+                '_locale' => 'deu'
+            ],
+            '_locale' => 'eng'
+        ];
+        $this->assertEquals(
+            $expected,
+            $result,
+            'The copy record should also be translated'
         );
     }
 
@@ -186,7 +401,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testDelete()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $article = $table->find()->first();
         $this->assertTrue($table->delete($article));
 
@@ -204,7 +419,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testNoAmbiguousFields()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $table->locale('eng');
 
         $article = $table->find('all')
@@ -228,7 +443,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testNoAmbiguousConditions()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $table->locale('eng');
 
         $article = $table->find('all')
@@ -252,7 +467,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testNoAmbiguousOrder()
     {
         $table = TableRegistry::get('Articles');
-        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->addBehavior('Translate');
         $table->locale('eng');
 
         $article = $table->find('all')
@@ -301,13 +516,25 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->addBehavior('Translate');
         $table->locale('eng');
 
-        $result = $table
+        $query = $table
             ->find('translations')
             ->where(['Articles.id' => 1])
-            ->contain(['Authors'])
-            ->firstOrFail();
+            ->contain(['Authors']);
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'There should be a join to the translations table'
+        );
+
+        $result = $query->firstOrFail();
 
         $this->assertNotNull($result->author, "There should be an author for article 1.");
+        $expected = [
+            'id' => 1,
+            'name' => 'mariano'
+        ];
+        $this->assertSame($expected, $result->author->toArray());
+
         $this->assertNotEmpty($result->_translations, "Translations can't be empty.");
     }
 
@@ -323,32 +550,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
      */
     public function testFindTranslations()
     {
-        $this->markTestSkipped();
-    }
-
-    /**
-     * testChangingReferenceName
-     *
-     * The parent test is EAV specific. Test that the config reflects the referenceName -
-     * which is used to determine the the translation table/association name only in the
-     * shadow translate behavior
-     *
-     * @return void
-     */
-    public function testChangingReferenceName()
-    {
-        $table = TableRegistry::get('Articles');
-        $table->table();
-        $table->alias('FavoritePost');
-        $table->addBehavior(
-            'Translate',
-            ['fields' => ['body'], 'referenceName' => 'Posts']
-        );
-
-        $config = $table->behaviors()->get('ShadowTranslate')->config();
-        $this->assertSame('posts_translations', $config['translationTable']);
-        $this->assertSame('PostsTranslations', $config['translationTableAlias']);
-        $this->assertSame('FavoritePost', $config['mainTableAlias']);
+        $this->assertTrue(true, 'Skipped');
     }
 
     /**
@@ -385,5 +587,33 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertSame('First Article', $result->title, 'The empty translation should be ignored');
         $this->assertSame('First Article Body', $result->body, 'The empty translation should be ignored');
         $this->assertNull($result->description);
+    }
+
+    /**
+     * Used in the config tests to verify that a simple find still works
+     *
+     * @param string $tableAlias
+     * @return void
+     */
+    protected function _testFind($tableAlias = 'Articles')
+    {
+        $table = TableRegistry::get($tableAlias);
+        $table->locale('eng');
+
+        $query = $table->find()->select();
+        $result = array_intersect_key(
+            $query->first()->toArray(),
+            array_flip(['title', 'body', '_locale'])
+        );
+        $expected = [
+            'title' => 'Title #1',
+            'body' => 'Content #1',
+            '_locale' => 'eng'
+        ];
+        $this->assertSame(
+            $expected,
+            $result,
+            'Title and body are translated values, but don\'t match'
+        );
     }
 }
