@@ -135,7 +135,9 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     protected function _addFieldsToQuery(Query $query, array $config)
     {
-        $select = $query->clause('select');
+        $select = array_filter($query->clause('select'), function ($field) {
+            return is_string($field);
+        });
 
         if (!$select) {
             return true;
@@ -254,7 +256,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * in the database too.
      *
      * @param \Cake\Event\Event $event The beforeSave event that was fired
-     * @param \Cake\ORM\Entity $entity The entity that is going to be saved
+     * @param \Cake\Datasource\EntityInterface $entity The entity that is going to be saved
      * @param \ArrayObject $options the options passed to the save method
      * @return void
      */
