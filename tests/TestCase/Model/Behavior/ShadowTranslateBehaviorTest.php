@@ -602,7 +602,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->locale('eng');
         $query = $table->find();
         
-        $query->select(['title', 'title2' => $query->func()->concat(['title' => 'literal', ' 2']), 'body']);
+        $query->select(['title', 'title2' => $query->func()->concat(['Articles.title' => 'literal', ' 2']), 'body']);
 
         $this->assertNotNull($query->toArray(), 'There will be an exception if there\'s field type problem');
         
