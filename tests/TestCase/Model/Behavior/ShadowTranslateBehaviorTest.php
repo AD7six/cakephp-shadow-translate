@@ -604,7 +604,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         
         $query->select(['title', 'title2' => $query->func()->concat(['title' => 'literal', ' 2']), 'body']);
 
-        $this->assertNotNull(query->toArrat(), 'There will be an exception if there\'s field type problem');
+        $this->assertNotNull($query->toArray(), 'There will be an exception if there\'s field type problem');
         
 
         $expected = ['title', 'body'];
