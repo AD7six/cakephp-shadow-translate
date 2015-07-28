@@ -588,6 +588,31 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertSame('First Article Body', $result->body, 'The empty translation should be ignored');
         $this->assertNull($result->description);
     }
+    
+    /**
+     * Tests using FunctionExpression
+     *
+     * @return void
+     */
+    public function testUsingFunctionExpression()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+
+        $table->locale('eng');
+        $query = $table->find();
+        
+        $query->select(['title', 'title2' => $query->func()->concat(['title' => 'literal', ' 2']), 'body']);
+        
+
+        $expected = ['title', 'body'];
+        $result = $table->behaviors()->get('ShadowTranslate')->config('fields');
+        $this->assertSame(
+            $expected,
+            $result,
+            'If no fields are specified, they should be derived from the schema'
+        );
+    }
 
     /**
      * Used in the config tests to verify that a simple find still works
