@@ -3,10 +3,10 @@ namespace ShadowTranslate\Model\Behavior;
 
 use ArrayObject;
 use Cake\Database\Expression\FieldInterface;
+use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
 use Cake\ORM\Behavior;
 use Cake\ORM\Behavior\TranslateBehavior;
-use Cake\Datasource\EntityInterface;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
