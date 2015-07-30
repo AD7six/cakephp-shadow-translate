@@ -258,7 +258,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * @param \ArrayObject $options the options passed to the save method
      * @return void
      */
-    public function beforeSave(Event $event, Entity $entity, ArrayObject $options)
+    public function beforeSave(Event $event, EntityInterface $entity, ArrayObject $options)
     {
         $locale = $entity->get('_locale') ?: $this->locale();
         $table = $this->_config['translationTable'];
