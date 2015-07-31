@@ -3,10 +3,10 @@ namespace ShadowTranslate\Model\Behavior;
 
 use ArrayObject;
 use Cake\Database\Expression\FieldInterface;
+use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
 use Cake\ORM\Behavior;
 use Cake\ORM\Behavior\TranslateBehavior;
-use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -258,7 +258,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * @param \ArrayObject $options the options passed to the save method
      * @return void
      */
-    public function beforeSave(Event $event, Entity $entity, ArrayObject $options)
+    public function beforeSave(Event $event, EntityInterface $entity, ArrayObject $options)
     {
         $locale = $entity->get('_locale') ?: $this->locale();
         $table = $this->_config['translationTable'];
