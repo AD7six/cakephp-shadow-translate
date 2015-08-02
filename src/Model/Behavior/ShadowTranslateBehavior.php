@@ -398,7 +398,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * out of the data found in the `_translations` property in the passed
      * entity. The result will be put into its `_i18n` property
      *
-     * @param \Cake\ORM\Entity $entity Entity
+     * @param \Cake\Datasource\EntityInterface $entity Entity
      * @return void
      */
     protected function _bundleTranslatedFields($entity)
