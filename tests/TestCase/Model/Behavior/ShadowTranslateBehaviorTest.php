@@ -588,7 +588,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertSame('First Article Body', $result->body, 'The empty translation should be ignored');
         $this->assertNull($result->description);
     }
-    
+
     /**
      * Tests using FunctionExpression
      *
@@ -600,19 +600,27 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->addBehavior('Translate');
 
         $table->locale('eng');
-        $query = $table->find();
-        
-        $query->select(['title', 'title2' => $query->func()->concat(['Articles.title' => 'literal', ' 2']), 'body']);
+        $query = $table->find()->select();
+        $query->select([
+            'title',
+            'function_expression' => $query->func()->concat(['ArticlesTranslation.title' => 'literal', ' with a suffix']),
+            'body'
+        ]);
+        $result = array_intersect_key(
+            $query->first()->toArray(),
+            array_flip(['title', 'function_expression', 'body', '_locale'])
+        );
 
-        $this->assertNotNull($query->toArray(), 'There will be an exception if there\'s field type problem');
-        
-
-        $expected = ['title', 'body'];
-        $result = $table->behaviors()->get('ShadowTranslate')->config('fields');
+        $expected = [
+            'title' => 'Title #1',
+            'function_expression' => 'Title #1 with a suffix',
+            'body' => 'Content #1',
+            '_locale' => 'eng'
+        ];
         $this->assertSame(
             $expected,
             $result,
-            'If no fields are specified, they should be derived from the schema'
+            'Including a function expression should work but requires referencing the used table aliases'
         );
     }
 
