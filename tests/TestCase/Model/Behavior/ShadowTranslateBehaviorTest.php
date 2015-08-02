@@ -590,6 +590,41 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * Tests using FunctionExpression
+     *
+     * @return void
+     */
+    public function testUsingFunctionExpression()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+
+        $table->locale('eng');
+        $query = $table->find()->select();
+        $query->select([
+            'title',
+            'function_expression' => $query->func()->concat(['ArticlesTranslation.title' => 'literal', ' with a suffix']),
+            'body'
+        ]);
+        $result = array_intersect_key(
+            $query->first()->toArray(),
+            array_flip(['title', 'function_expression', 'body', '_locale'])
+        );
+
+        $expected = [
+            'title' => 'Title #1',
+            'function_expression' => 'Title #1 with a suffix',
+            'body' => 'Content #1',
+            '_locale' => 'eng'
+        ];
+        $this->assertSame(
+            $expected,
+            $result,
+            'Including a function expression should work but requires referencing the used table aliases'
+        );
+    }
+
+    /**
      * Used in the config tests to verify that a simple find still works
      *
      * @param string $tableAlias
