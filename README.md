@@ -57,6 +57,75 @@ You can specify the fields in the translation table - but if you don't they are 
 table schema. From this point forward, see [the documentation for the core translate behavior](http://book.cakephp.org/3.0/en/orm/behaviors/translate.html), the shadow translate behavior should act
 the same, and if it doesn't, well, see  below.
 
+## Why use Shadow Translate
+
+The standard translate behavior uses an [EAV](https://en.wikipedia.org/wiki/Entity%E2%80%93attribute%E2%80%93value_model)
+style translations table, and one join per field. By default all translations
+are stored in [the same translation table](https://github.com/cakephp/app/blob/master/config/schema/i18n.sql).
+To give an example, the core translation behavior generates sql of the form:
+
+    SELECT
+        posts.*,
+        posts_title_translations.title,
+        posts_title_translations.content,
+        etc.
+    FROM
+        posts
+    LEFT JOIN
+        i18n as posts_title_translations ON (
+            posts_title_translations.locale = "xx" AND
+            posts_title_translations.model = "Posts" AND
+            posts_title_translations.foreign_key = posts.id AND
+            posts_title_translations.field = 'title'
+       )
+    LEFT JOIN
+        i18n as posts_body_translations ON (
+            posts_body_translations.locale = "xx" AND
+            posts_body_translations.model = "Posts" AND
+            posts_body_translations.foreign_key = posts.id AND
+            posts_body_translations.field = 'body'
+       )
+    etc.
+
+There is very little setup for the core translate behavior, but the cost
+for no-setup is sql complexity, and it is more complex for each translated
+field. Depending on how much data there is being translated - it's quite
+possible for this data structure to cause slow queries; it also complicates
+finding records by translated field values.
+
+Key points:
+
+ * Easy to setup
+ * All translated content stored in the same table
+ * One join per translated field when querying
+ * Less efficient queries - more joins and one index for all content
+ * Harder to find by translated content
+
+By contrast, the shadow translate behavior does not use an EAV style
+translation table, the translations are stored in a _copy_ of the main data
+table. This permits much less complex sql at the cost of having _some_ setup
+steps per table. The shadow translate behavior generates sql of the form:
+
+    SELECT
+        posts.*,
+        posts_translations.*
+    FROM
+        posts
+    LEFT JOIN
+        posts_translations ON (
+            posts_translations.locale = "xx" AND
+            posts_translations.id = posts.id
+    )
+    // no etc.
+
+Key points:
+
+ * (Slightly) more work to setup
+ * Translated content is stored in a copy of the main data table
+ * One join per translated table
+ * More efficient queries - less joins and indexes per translated field are possible
+ * Easier to find by translated content
+
 ## Roadmap
 
 The initial release is only the behavior, it is planned for the future to add:
