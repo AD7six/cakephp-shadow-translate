@@ -418,7 +418,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
                     'id' => $key,
                     'locale' => $lang,
                 ];
-                $translation->set($update, ['setter' => false]);
+                $translation->set($update, ['guard' => false]);
             }
         }
 
