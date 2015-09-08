@@ -640,9 +640,9 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
 
         $article = $table->get(1);
-
         $article->translation('xyz')->title = 'XYZ title';
-        $table->save($article);
+
+        $this->assertNotFalse($table->save($article), "The save should succeed");
     }
 
     /**
