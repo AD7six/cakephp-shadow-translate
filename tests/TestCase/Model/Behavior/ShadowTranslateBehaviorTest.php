@@ -29,7 +29,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function setUp()
     {
         $aliases = ['Articles', 'Authors', 'Comments'];
-        $options = ['className' => 'ShadowTranslate\Test\TestCase\Model\Behavior\Table'];
+        $options = ['className' => __NAMESPACE__ . '\Table'];
 
         foreach ($aliases as $alias) {
             TableRegistry::get($alias, $options);
@@ -622,6 +622,27 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             $result,
             'Including a function expression should work but requires referencing the used table aliases'
         );
+    }
+
+    /**
+     * Ensure saving with accessible defined works
+     *
+     * With a standard baked model the accessible property is defined, that'll mean that
+     * Setting fields such as id and locale will fail by default due to mass-assignment
+     * protection. An exception is thrown if that happens
+     *
+     * @return void
+     */
+    public function testSaveWithAccessibleFalse()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->entityClass(__NAMESPACE__ . '\BakedArticles');
+        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+
+        $article = $table->get(1);
+        $article->translation('xyz')->title = 'XYZ title';
+
+        $this->assertNotFalse($table->save($article), "The save should succeed");
     }
 
     /**
