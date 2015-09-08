@@ -1,8 +1,8 @@
 <?php
 namespace ShadowTranslate\Test\TestCase\Model\Behavior;
 
-use Cake\ORM\Entity;
 use Cake\ORM\Behavior\Translate\TranslateTrait;
+use Cake\ORM\Entity;
 
 /**
  * Simulated baked entity class for a translated table
