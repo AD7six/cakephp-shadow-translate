@@ -225,7 +225,6 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $fields = $this->_translationFields();
         $mainTableAlias = $config['mainTableAlias'];
         $mainTableFields = $this->_mainFields();
-        $alias = $config['referenceName'];
         $joinRequired = false;
 
         $clause->traverse(function ($expression) use ($fields, $alias, $mainTableAlias, $mainTableFields, &$joinRequired) {
