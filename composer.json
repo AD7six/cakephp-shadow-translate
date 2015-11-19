@@ -15,6 +15,7 @@
         "cakephp/i18n": "~3.0"
     },
     "require-dev": {
+        "cakephp/cakephp": "~3.0",
         "cakephp/cakephp-codesniffer": "dev-master"
     },
     "autoload": {
