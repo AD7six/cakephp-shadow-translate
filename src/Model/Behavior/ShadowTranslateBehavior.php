@@ -98,7 +98,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
 
         $this->_table->hasOne($config['hasOneAlias'], [
-            'foreignKey' => $config['translationForeignKey'],
+            'foreignKey' => [$config['translationForeignKey']],
             'joinType' => $joinType,
             'propertyName' => 'translation',
             'className' => $config['translationTable'],
