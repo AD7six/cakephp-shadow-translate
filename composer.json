@@ -11,7 +11,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "cakephp/cakephp": "~3.0"
+        "cakephp/orm": "~3.0",
+        "cakephp/i18n": "~3.0"
     },
     "require-dev": {
         "cakephp/cakephp-codesniffer": "dev-master"
