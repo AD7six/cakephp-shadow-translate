@@ -385,7 +385,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
             $result = [];
             foreach ($translations as $translation) {
-                unset($translation['id']);
+                unset($translation[$this->config['translationForeignKey']]);
                 $result[$translation['locale']] = $translation;
             }
 
@@ -489,7 +489,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $table = $this->_translationTable();
         $fields = $table->schema()->columns();
         $fields = array_values(array_diff($fields, [
-            'id',
+            $config['translationForeignKey'],
             $config['localeField']
         ]));
 
