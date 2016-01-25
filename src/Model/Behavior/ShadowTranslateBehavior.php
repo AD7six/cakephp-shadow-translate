@@ -269,11 +269,15 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $this->_bundleTranslatedFields($entity);
         $bundled = $entity->get('_i18n') ?: [];
 
-        if ($locale === $this->config('defaultLocale')) {
+        if ($this->config('useDefaultLocale') && $locale === $this->config('defaultLocale')) {
             return;
         }
         $values = $entity->extract($this->_translationFields(), true);
         $fields = array_keys($values);
+
+        if (empty($fields)) {
+            return;
+        }
         $primaryKey = (array)$this->_table->primaryKey();
         $id = $entity->get(current($primaryKey));
         $where = compact('id', 'locale');
