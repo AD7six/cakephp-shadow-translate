@@ -29,7 +29,6 @@ matrix:
   allow_failures:
     - env: COVERALLS=1 DEFAULT=0 DB=mysql db_dsn='mysql://travis@0.0.0.0/cakephp_test'
 
-
 before_script:
   - composer self-update
   - composer install --no-interaction --dev
