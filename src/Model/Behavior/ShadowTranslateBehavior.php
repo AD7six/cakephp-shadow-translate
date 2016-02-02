@@ -274,6 +274,10 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
         $values = $entity->extract($this->_translationFields(), true);
         $fields = array_keys($values);
+
+        if (empty($fields)) {
+            return;
+        }
         $primaryKey = (array)$this->_table->primaryKey();
         $id = $entity->get(current($primaryKey));
         $where = compact('id', 'locale');
