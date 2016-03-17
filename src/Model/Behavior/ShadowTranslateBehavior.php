@@ -262,7 +262,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     public function beforeSave(Event $event, EntityInterface $entity, ArrayObject $options)
     {
         $locale = $entity->get('_locale') ?: $this->locale();
-        $newOptions = [$this->_table->alias() => ['validate' => false]];
+        $newOptions = [$this->_translationTable->alias() => ['validate' => false]];
         $options['associated'] = $newOptions + $options['associated'];
 
         $this->_bundleTranslatedFields($entity);
