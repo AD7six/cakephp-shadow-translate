@@ -33,7 +33,7 @@ class MigrateFromCoreTranslation extends Shell
         $this->out('There is a total of: ' . $numberOfFks . ' translations to handle!', 0);
         $this->hr(1);
 
-        foreach ($allFks->toArray() as $number => $fk) {
+        foreach ($allFks as $number => $fk) {
             try {
                 if (!empty($fk['content'])) {
                     $currentLocale = $fk['locale'];
