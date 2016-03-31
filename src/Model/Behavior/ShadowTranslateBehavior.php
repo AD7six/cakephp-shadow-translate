@@ -378,6 +378,9 @@ class ShadowTranslateBehavior extends TranslateBehavior
     {
         return $results->map(function ($row) {
             $translations = (array)$row['_i18n'];
+            if (empty($translations) && $row->get('_translations')) {
+                return $row;
+            }
 
             $result = [];
             foreach ($translations as $translation) {
