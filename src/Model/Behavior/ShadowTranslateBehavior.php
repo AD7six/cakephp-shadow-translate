@@ -135,6 +135,10 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     protected function _addFieldsToQuery(Query $query, array $config)
     {
+        if ($query->autoFields()) {
+            return true;
+        }
+
         $select = array_filter($query->clause('select'), function ($field) {
             return is_string($field);
         });
