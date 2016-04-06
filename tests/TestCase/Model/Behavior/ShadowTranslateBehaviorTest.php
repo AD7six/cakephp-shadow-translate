@@ -549,7 +549,6 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
      */
     public function testFindWithBTMAssociations()
     {
-
         $Articles = TableRegistry::get('Articles');
         $Tags = TableRegistry::get('Tags');
 
