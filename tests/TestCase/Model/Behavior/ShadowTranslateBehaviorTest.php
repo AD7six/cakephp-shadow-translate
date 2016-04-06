@@ -15,10 +15,13 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         'core.Articles',
         'core.Authors',
         'core.Comments',
+        'core.Tags',
+        'core.ArticlesTags',
         'plugin.ShadowTranslate.ArticlesTranslations',
         'plugin.ShadowTranslate.ArticlesMoreTranslations',
         'plugin.ShadowTranslate.AuthorsTranslations',
         'plugin.ShadowTranslate.CommentsTranslations',
+        'plugin.ShadowTranslate.TagsTranslations',
     ];
 
     /**
@@ -536,6 +539,57 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertSame($expected, $result->author->toArray());
 
         $this->assertNotEmpty($result->_translations, "Translations can't be empty.");
+    }
+
+
+    /**
+     * Test that when finding BTM associations, the contained BTM data is also translated.
+     *
+     * @return void
+     */
+    public function testFindWithBTMAssociations()
+    {
+        $Articles = TableRegistry::get('Articles');
+        $Tags = TableRegistry::get('Tags');
+
+        $Articles->addBehavior('ShadowTranslate.ShadowTranslate');
+        $Tags->addBehavior('ShadowTranslate.ShadowTranslate');
+
+        $Articles->locale('deu');
+        $Tags->locale('deu');
+
+        $Articles->belongsToMany('Tags');
+
+        $query = $Articles
+            ->find()
+            ->where(['Articles.id' => 1])
+            ->contain(['Tags']);
+
+        $result = $query->firstOrFail();
+
+        $this->assertCount(2, $result->tags, "There should be two translated tags.");
+
+        $expected = [
+            'id' => 1,
+            'name' => 'tag1 in deu',
+            '_locale' => 'deu',
+            '_joinData' => [
+                'tag_id' => 1,
+                'article_id' => 1
+            ]
+        ];
+        $this->assertSame($expected, $result->tags[0]->toArray());
+
+        $expected = [
+            'id' => 2,
+            'name' => 'tag2 in deu',
+            '_locale' => 'deu',
+            '_joinData' => [
+                'tag_id' => 2,
+                'article_id' => 1
+            ]
+        ];
+        $this->assertSame($expected, $result->tags[1]->toArray());
     }
 
     /**
