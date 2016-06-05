@@ -14,44 +14,53 @@ replacement in terms of usage.
 
 First install the plugin for your app using composer:
 
-`php composer.phar require ad7six/shadow-translate:dev-master`
+`php composer.phar require ad7six/shadow-translate`
 
 Load the plugin by adding following statement to your app's `config/bootstrap.php`:
 
-`Plugin::load('ShadowTranslate');`
+```php
+Plugin::load('ShadowTranslate');
+```
 
 The shadow translate behavior expects each table to have its own translation table. Taking the
 blog tutorial as a start point, the following table would already exist:
 
-	CREATE TABLE posts (
-		id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-		title VARCHAR(50),
-		body TEXT,
-		created DATETIME DEFAULT NULL,
-		modified DATETIME DEFAULT NULL
-	);
+```sql
+CREATE TABLE posts (
+	id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	title VARCHAR(50),
+	body TEXT,
+	created DATETIME DEFAULT NULL,
+	modified DATETIME DEFAULT NULL
+);
+```
 
 To prepare for using the shadow translate behavior, the following table would be created:
 
-	CREATE TABLE posts_translations (
-		id INT UNSIGNED,
-		locale VARCHAR(5),
-		title VARCHAR(50),
-		body TEXT,
-		PRIMARY KEY (id, locale)
-	);
+```sql
+CREATE TABLE posts_translations (
+	id INT UNSIGNED,
+	locale VARCHAR(5),
+	title VARCHAR(50),
+	body TEXT,
+	PRIMARY KEY (id, locale)
+);
+```
+
 
 Note that the id is the same type as the posts table - but the primary key is a compound key
 using both id and locale.
 
 Usage is very similar to the core's behavior so e.g.:
 
-	class PostsTable extends Table {
+```php
+class PostsTable extends Table {
 
-		public function initialize(array $config) {
-			$this->addBehavior('ShadowTranslate.ShadowTranslate');
-		}
+	public function initialize(array $config) {
+		$this->addBehavior('ShadowTranslate.ShadowTranslate');
 	}
+}
+```
 
 You can specify the fields in the translation table - but if you don't they are derived from the translation
 table schema. From this point forward, see [the documentation for the core translate behavior](http://book.cakephp.org/3.0/en/orm/behaviors/translate.html), the shadow translate behavior should act
@@ -64,28 +73,30 @@ style translations table, and one join per field. By default all translations
 are stored in [the same translation table](https://github.com/cakephp/app/blob/master/config/schema/i18n.sql).
 To give an example, the core translation behavior generates sql of the form:
 
-    SELECT
-        posts.*,
-        posts_title_translations.title,
-        posts_title_translations.content,
-        etc.
-    FROM
-        posts
-    LEFT JOIN
-        i18n as posts_title_translations ON (
-            posts_title_translations.locale = "xx" AND
-            posts_title_translations.model = "Posts" AND
-            posts_title_translations.foreign_key = posts.id AND
-            posts_title_translations.field = 'title'
-       )
-    LEFT JOIN
-        i18n as posts_body_translations ON (
-            posts_body_translations.locale = "xx" AND
-            posts_body_translations.model = "Posts" AND
-            posts_body_translations.foreign_key = posts.id AND
-            posts_body_translations.field = 'body'
-       )
+```sql
+SELECT
+    posts.*,
+    posts_title_translations.title,
+    posts_title_translations.content,
     etc.
+FROM
+    posts
+LEFT JOIN
+    i18n as posts_title_translations ON (
+        posts_title_translations.locale = "xx" AND
+        posts_title_translations.model = "Posts" AND
+        posts_title_translations.foreign_key = posts.id AND
+        posts_title_translations.field = 'title'
+   )
+LEFT JOIN
+    i18n as posts_body_translations ON (
+        posts_body_translations.locale = "xx" AND
+        posts_body_translations.model = "Posts" AND
+        posts_body_translations.foreign_key = posts.id AND
+        posts_body_translations.field = 'body'
+   )
+etc.
+```
 
 There is very little setup for the core translate behavior, but the cost
 for no-setup is sql complexity, and it is more complex for each translated
@@ -106,17 +117,19 @@ translation table, the translations are stored in a _copy_ of the main data
 table. This permits much less complex sql at the cost of having _some_ setup
 steps per table. The shadow translate behavior generates sql of the form:
 
-    SELECT
-        posts.*,
-        posts_translations.*
-    FROM
-        posts
-    LEFT JOIN
-        posts_translations ON (
-            posts_translations.locale = "xx" AND
-            posts_translations.id = posts.id
-    )
-    // no etc.
+```sql
+SELECT
+    posts.*,
+    posts_translations.*
+FROM
+    posts
+LEFT JOIN
+    posts_translations ON (
+        posts_translations.locale = "xx" AND
+        posts_translations.id = posts.id
+)
+// no etc.
+```
 
 Key points:
 
