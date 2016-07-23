@@ -35,6 +35,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
 
         $config += [
+            'localeField' => 'locale',
+            'translationForeignKey' => 'id',
             'mainTableAlias' => $tableAlias,
             'translationTable' => $plugin . $tableReferenceName . 'Translations',
             'hasOneAlias' => $tableAlias . 'Translation',
@@ -62,7 +64,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
         $this->_table->hasMany($config['translationTable'], [
             'className' => $config['translationTable'],
-            'foreignKey' => 'id',
+            'foreignKey' => $config['translationForeignKey'],
             'strategy' => $strategy,
             'propertyName' => '_i18n',
             'dependent' => true
@@ -96,12 +98,12 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
 
         $this->_table->hasOne($config['hasOneAlias'], [
-            'foreignKey' => ['id'],
+            'foreignKey' => [$config['translationForeignKey']],
             'joinType' => $joinType,
             'propertyName' => 'translation',
             'className' => $config['translationTable'],
             'conditions' => [
-                $config['hasOneAlias'] . '.locale' => $locale,
+                $config['hasOneAlias'] . '.' . $config['localeField'] => $locale,
             ],
         ]);
 
@@ -265,6 +267,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function beforeSave(Event $event, EntityInterface $entity, ArrayObject $options)
     {
+        $config = $this->config();
         $locale = $entity->get('_locale') ?: $this->locale();
         $newOptions = [$this->_translationTable->alias() => ['validate' => false]];
         $options['associated'] = $newOptions + $options['associated'];
@@ -283,10 +286,14 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
         $primaryKey = (array)$this->_table->primaryKey();
         $id = $entity->get(current($primaryKey));
-        $where = compact('id', 'locale');
+
+        $where = [
+            $config['translationForeignKey'] => $id,
+            $config['localeField'] => $locale
+        ];
 
         $translation = $this->_translationTable()->find()
-            ->select(array_merge(['id', 'locale'], $fields))
+            ->select(array_merge([$config['translationForeignKey'], $config['localeField']], $fields))
             ->where($where)
             ->bufferResults(false)
             ->first();
@@ -349,7 +356,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             $keys = $hydrated ? $translation->visibleProperties() : array_keys($translation);
 
             foreach ($keys as $field) {
-                if ($field === 'locale') {
+                if ($field === $this->config('localeField')) {
                     $row['_locale'] = $translation[$field];
                     continue;
                 }
@@ -388,7 +395,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
             $result = [];
             foreach ($translations as $translation) {
-                unset($translation['id']);
+                unset($translation[$this->config['translationForeignKey']]);
                 $result[$translation['locale']] = $translation;
             }
 
@@ -413,6 +420,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     protected function _bundleTranslatedFields($entity)
     {
         $translations = (array)$entity->get('_translations');
+        $config = $this->config();
 
         if (empty($translations) && !$entity->dirty('_translations')) {
             return;
@@ -424,8 +432,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
         foreach ($translations as $lang => $translation) {
             if (!$translation->id) {
                 $update = [
-                    'id' => $key,
-                    'locale' => $lang,
+                    $config['translationForeignKey'] => $key,
+                    $config['localeField'] => $lang,
                 ];
                 $translation->set($update, ['guard' => false]);
             }
@@ -482,6 +490,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     protected function _translationFields()
     {
         $fields = $this->config('fields');
+        $config = $this->config();
 
         if ($fields) {
             return $fields;
@@ -489,7 +498,10 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
         $table = $this->_translationTable();
         $fields = $table->schema()->columns();
-        $fields = array_values(array_diff($fields, ['id', 'locale']));
+        $fields = array_values(array_diff($fields, [
+            $config['translationForeignKey'],
+            $config['localeField']
+        ]));
 
         $this->config('fields', $fields);
 
