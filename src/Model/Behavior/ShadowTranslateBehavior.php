@@ -63,7 +63,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
         $this->_table->hasMany($config['translationTable'], [
             'className' => $config['translationTable'],
-            'foreignKey' => $this->config('foreignKey'),
+            'foreignKey' => (array)$this->config('foreignKey'),
             'strategy' => $strategy,
             'propertyName' => '_i18n',
             'dependent' => true
@@ -97,7 +97,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
 
         $this->_table->hasOne($config['hasOneAlias'], [
-            'foreignKey' => $this->config('foreignKey'),
+            'foreignKey' => (array)$this->config('foreignKey'),
             'joinType' => $joinType,
             'propertyName' => 'translation',
             'className' => $config['translationTable'],
@@ -244,7 +244,6 @@ class ShadowTranslateBehavior extends TranslateBehavior
             if (in_array($field, $fields)) {
                 $joinRequired = true;
                 $expression->setField("$alias.$field");
-
                 return;
             }
 
@@ -288,7 +287,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $where = array_merge(array_combine($primaryKey, $primaryKeyValue), compact('locale'));
 
         $translation = $this->_translationTable()->find()
-            ->select(array_merge($this->config('foreignKey'), ['locale'], $fields))
+            ->select(array_merge((array)$this->config('foreignKey'), ['locale'], $fields))
             ->where($where)
             ->bufferResults(false)
             ->first();
@@ -390,7 +389,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
             $result = [];
             foreach ($translations as $translation) {
-                foreach ($this->config('foreignKey') as $pkField) {
+                foreach ((array)$this->config('foreignKey') as $pkField) {
                     unset($translation[$pkField]);
                 }
                 $result[$translation['locale']] = $translation;
@@ -423,17 +422,17 @@ class ShadowTranslateBehavior extends TranslateBehavior
         }
 
         $primaryKey = (array)$this->_table->primaryKey();
-        $key = $entity->get(current($primaryKey));
+        $key = (array)$entity->extract($primaryKey);
 
-        foreach ($translations as $lang => $translation) {
+        foreach ($translations as $locale => $translation) {
             $mustUpdate = false;
-            foreach ($_primaryKeyFields as $pkField) {
+            foreach ((array)$this->config('foreignKey') as $pkField) {
                 if (!$translation->{$pkField}) {
                     $mustUpdate = true;
                 }
             }
             if ($mustUpdate) {
-                $update = array_merge(array_combine($this->config('foreignKey'), $key), ['locale' => $Lang]);
+                $update = array_merge(array_combine((array)$this->config('foreignKey'), $key), compact('locale'));
                 $translation->set($update, ['guard' => false]);
             }
         }
@@ -496,7 +495,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
         $table = $this->_translationTable();
         $fields = $table->schema()->columns();
-        $fields = array_values(array_diff($fields, array_merge($this->config('foreignKey'), ['locale'])));
+        $fields = array_values(array_diff($fields, array_merge((array)$this->config('foreignKey'), ['locale'])));
 
         $this->config('fields', $fields);
 
