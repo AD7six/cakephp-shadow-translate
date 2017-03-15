@@ -822,6 +822,114 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * Tests adding new translation to a record
+     *
+     * @return void
+     */
+    public function testAllowEmptyFalse()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', ['fields' => ['title'], 'allowEmptyTranslations' => false]);
+
+        $article = $table->find()->first();
+        $this->assertEquals(1, $article->get('id'));
+
+        $article = $table->patchEntity($article, [
+            '_translations' => [
+                'fra' => [
+                    'title' => ''
+                ]
+            ]
+        ]);
+
+        $table->save($article);
+
+        // Remove the Behavior to unset the content != '' condition
+        $table->removeBehavior('Translate');
+
+        $noFra = $table->ArticlesTranslations->find()->where(['locale' => 'fra'])->first();
+        $this->assertEmpty($noFra);
+    }
+
+    /**
+     * Tests adding new translation to a record
+     *
+     * @return void
+     */
+    public function testMixedAllowEmptyFalse()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', ['fields' => ['title', 'body'], 'allowEmptyTranslations' => false]);
+
+        $article = $table->find()->first();
+        $this->assertEquals(1, $article->get('id'));
+
+        $article = $table->patchEntity($article, [
+            '_translations' => [
+                'fra' => [
+                    'title' => '',
+                    'body' => 'Bonjour'
+                ]
+            ]
+        ]);
+
+        $table->save($article);
+
+        $fra = $table->ArticlesTranslations->find()
+            ->where([
+                'locale' => 'fra',
+            ])
+            ->first();
+        $this->assertSame('Bonjour', $fra->body);
+        $this->assertNull($fra->title);
+    }
+
+    /**
+     * Tests adding new translation to a record
+     *
+     * @return void
+     */
+    public function testMultipleAllowEmptyFalse()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', ['fields' => ['title', 'body'], 'allowEmptyTranslations' => false]);
+
+        $article = $table->find()->first();
+        $this->assertEquals(1, $article->get('id'));
+
+        $article = $table->patchEntity($article, [
+            '_translations' => [
+                'fra' => [
+                    'title' => '',
+                    'body' => 'Bonjour'
+                ],
+                'de' => [
+                    'title' => 'Titel',
+                    'body' => 'Hallo'
+                ]
+            ]
+        ]);
+
+        $table->save($article);
+
+        $fra = $table->ArticlesTranslations->find()
+            ->where([
+                'locale' => 'fra',
+            ])
+            ->first();
+        $this->assertSame('Bonjour', $fra->body);
+        $this->assertNull($fra->title);
+
+        $de = $table->ArticlesTranslations->find()
+            ->where([
+                'locale' => 'de',
+            ])
+            ->first();
+        $this->assertSame('Titel', $de->title);
+        $this->assertSame('Hallo', $de->body);
+    }
+
+    /**
      * Used in the config tests to verify that a simple find still works
      *
      * @param string $tableAlias

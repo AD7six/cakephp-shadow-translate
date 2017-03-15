@@ -270,6 +270,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $newOptions = [$this->_translationTable->alias() => ['validate' => false]];
         $options['associated'] = $newOptions + $options['associated'];
 
+        // Check early if empty translations are present in the entity.
+        // If this is the case, unset them to prevent persistence.
+        // This only applies if $this->_config['allowEmptyTranslations'] is false
+        if ($this->_config['allowEmptyTranslations'] === false) {
+            $this->_unsetEmptyFields($entity);
+        }
+
         $this->_bundleTranslatedFields($entity);
         $bundled = $entity->get('_i18n') ?: [];
         $noBundled = count($bundled) === 0;

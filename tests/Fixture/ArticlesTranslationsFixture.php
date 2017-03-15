@@ -17,7 +17,7 @@ class ArticlesTranslationsFixture extends TestFixture
     public $fields = [
         'id' => ['type' => 'integer'],
         'locale' => ['type' => 'string', 'null' => false],
-        'title' => ['type' => 'string', 'null' => false],
+        'title' => ['type' => 'string', 'null' => true],
         'body' => 'text',
         '_constraints' => ['primary' => ['type' => 'primary', 'columns' => ['id', 'locale']]],
     ];
