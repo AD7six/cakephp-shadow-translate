@@ -28,11 +28,11 @@ blog tutorial as a start point, the following table would already exist:
 
 ```sql
 CREATE TABLE posts (
-	id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	title VARCHAR(50),
-	body TEXT,
-	created DATETIME DEFAULT NULL,
-	modified DATETIME DEFAULT NULL
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(50),
+    body TEXT,
+    created DATETIME DEFAULT NULL,
+    modified DATETIME DEFAULT NULL
 );
 ```
 
@@ -40,11 +40,11 @@ To prepare for using the shadow translate behavior, the following table would be
 
 ```sql
 CREATE TABLE posts_translations (
-	id INT UNSIGNED,
-	locale VARCHAR(5),
-	title VARCHAR(50),
-	body TEXT,
-	PRIMARY KEY (id, locale)
+    id INT UNSIGNED,
+    locale VARCHAR(5),
+    title VARCHAR(50) DEFAULT NULL,
+    body TEXT DEFAULT NULL,
+    PRIMARY KEY (id, locale)
 );
 ```
 
@@ -57,9 +57,9 @@ Usage is very similar to the core's behavior so e.g.:
 ```php
 class PostsTable extends Table {
 
-	public function initialize(array $config) {
-		$this->addBehavior('ShadowTranslate.ShadowTranslate');
-	}
+    public function initialize(array $config) {
+        $this->addBehavior('ShadowTranslate.ShadowTranslate');
+    }
 }
 ```
 
