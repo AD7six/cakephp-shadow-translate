@@ -549,7 +549,6 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertNotEmpty($result->_translations, "Translations can't be empty.");
     }
 
-
     /**
      * Test that when finding BTM associations, the contained BTM data is also translated.
      *
