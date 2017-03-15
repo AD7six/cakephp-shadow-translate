@@ -16,8 +16,14 @@ class Table extends CakeTable
     public function addBehavior($name, array $options = [])
     {
         if ($name === 'Translate') {
-            $name = 'ShadowTranslate.ShadowTranslate';
+            $this->_behaviors->load('ShadowTranslate.ShadowTranslate', $options);
+            // This is required because core's TranslateBehaviorTest uses
+            // $table->behaviors->get('Translate')
+            $this->_behaviors->set('Translate', $this->_behaviors->get('ShadowTranslate'));
+
+            return;
         }
-        $this->_behaviors->load($name, $options);
+
+        parent::addBehavior($name, $options);
     }
 }

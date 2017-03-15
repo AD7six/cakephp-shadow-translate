@@ -17,11 +17,15 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         'core.Comments',
         'core.Tags',
         'core.ArticlesTags',
+        'core.SpecialTags',
+        'core.Groups',
         'plugin.ShadowTranslate.ArticlesTranslations',
         'plugin.ShadowTranslate.ArticlesMoreTranslations',
         'plugin.ShadowTranslate.AuthorsTranslations',
         'plugin.ShadowTranslate.CommentsTranslations',
         'plugin.ShadowTranslate.TagsTranslations',
+        'plugin.ShadowTranslate.SpecialTagsTranslations',
+        'plugin.ShadowTranslate.GroupsTranslations',
     ];
 
     /**
@@ -31,7 +35,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
      */
     public function setUp()
     {
-        $aliases = ['Articles', 'Authors', 'Comments'];
+        $aliases = ['Articles', 'Authors', 'Comments', 'SpecialTags', 'Groups'];
         $options = ['className' => __NAMESPACE__ . '\Table'];
 
         foreach ($aliases as $alias) {
@@ -57,8 +61,12 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
 
-        $this->assertFalse($table->hasBehavior('Translate'), 'Should not be on this table');
         $this->assertTrue($table->hasBehavior('ShadowTranslate'), 'Should be on this table');
+        $this->assertTrue($table->hasBehavior('Translate'), 'Should be on this table');
+        $this->assertSame(
+            $table->behaviors()->get('ShadowTranslate'),
+            $table->behaviors()->get('Translate')
+        );
     }
 
     /**
@@ -578,7 +586,9 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
                 'article_id' => 1
             ]
         ];
-        $this->assertSame($expected, $result->tags[0]->toArray());
+        $record = $result->tags[0]->toArray();
+        unset($record['description'], $record['created']);
+        $this->assertEquals($expected, $record);
 
         $expected = [
             'id' => 2,
@@ -589,7 +599,9 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
                 'article_id' => 1
             ]
         ];
-        $this->assertSame($expected, $result->tags[1]->toArray());
+        $record = $result->tags[1]->toArray();
+        unset($record['description'], $record['created']);
+        $this->assertEquals($expected, $record);
     }
 
     /**
@@ -697,6 +709,116 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $article->translation('xyz')->title = 'XYZ title';
 
         $this->assertNotFalse($table->save($article), "The save should succeed");
+    }
+
+    /**
+     * Tests translationField method for translated fields.
+     *
+     * @return void
+     */
+    public function testTranslationFieldForTranslatedFields()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+
+        $expected = 'ArticlesTranslation.title';
+        $field = $table->translationField('title');
+        $this->assertSame($expected, $field);
+    }
+
+    /**
+     * Test update entity with _translations field.
+     *
+     * Had to override this method because the core method has a wacky check
+     * for "description" field which doesn't even exist in ArticleFixture.
+     *
+     * @return void
+     */
+    public function testSaveExistingRecordWithTranslatesField()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
+        $table->entityClass('Cake\Test\TestCase\ORM\Behavior\Article');
+
+        $data = [
+            'author_id' => 1,
+            'published' => 'Y',
+            '_translations' => [
+                'eng' => [
+                    'title' => 'First Article1',
+                    'body' => 'First Article content has been updated'
+                ],
+                'spa' => [
+                    'title' => 'Mi nuevo titulo',
+                    'body' => 'Contenido Actualizado'
+                ]
+            ]
+        ];
+
+        $article = $table->find()->first();
+        $article = $table->patchEntity($article, $data);
+
+        $this->assertNotFalse($table->save($article));
+
+        $results = $this->_extractTranslations(
+            $table->find('translations')->where(['id' => 1])
+        )->first();
+
+        $this->assertEquals('Mi nuevo titulo', $results['spa']['title']);
+        $this->assertEquals('Contenido Actualizado', $results['spa']['body']);
+
+        $this->assertEquals('First Article1', $results['eng']['title']);
+    }
+
+    /**
+     * Test save new entity with _translations field
+     *
+     * @return void
+     */
+    public function testSaveNewRecordWithTranslatesField()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate', [
+            'fields' => ['title'],
+            'validator' => (new \Cake\Validation\Validator)->add('title', 'notBlank', ['rule' => 'notBlank'])
+        ]);
+        $table->entityClass('Cake\Test\TestCase\ORM\Behavior\Article');
+
+        $data = [
+            'author_id' => 1,
+            'published' => 'N',
+            '_translations' => [
+                'en' => [
+                    'title' => 'Title EN',
+                    'body' => 'Body EN'
+                ],
+                'es' => [
+                    'title' => 'Title ES'
+                ]
+            ]
+        ];
+
+        $article = $table->patchEntity($table->newEntity(), $data);
+        $result = $table->save($article);
+
+        $this->assertNotFalse($result);
+
+        $expected = [
+            [
+                'en' => [
+                    'title' => 'Title EN',
+                    'locale' => 'en',
+                    'body' => 'Body EN'
+                ],
+                'es' => [
+                    'title' => 'Title ES',
+                    'locale' => 'es',
+                    'body' => null
+                ]
+            ]
+        ];
+        $result = $table->find('translations')->where(['id' => $result->id]);
+        $this->assertEquals($expected, $this->_extractTranslations($result)->toArray());
     }
 
     /**
