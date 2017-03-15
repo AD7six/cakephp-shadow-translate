@@ -10,12 +10,12 @@
         }
     ],
     "require": {
-        "cakephp/orm": "~3.0",
-        "cakephp/i18n": "~3.0"
+        "cakephp/orm": "^3.4.3",
+        "cakephp/i18n": "^3.4.3"
     },
     "require-dev": {
         "phpunit/phpunit": "<6.0",
-        "cakephp/cakephp": "~3.1",
+        "cakephp/cakephp": "^3.4.3",
         "cakephp/cakephp-codesniffer": "~2.3"
     },
     "autoload": {
