@@ -95,7 +95,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             $joinType = $config['onlyTranslated'] ? 'INNER' : 'LEFT';
         }
 
-        $this->_table->hasOne($config['hasOneAlias'], [
+        $translationTable = $this->_table->hasOne($config['hasOneAlias'], [
             'foreignKey' => ['id'],
             'joinType' => $joinType,
             'propertyName' => 'translation',
@@ -104,6 +104,9 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 $config['hasOneAlias'] . '.locale' => $locale,
             ],
         ]);
+        foreach ($this->_table->schema()->typeMap() as $field => $fieldType) {
+            $translationTable->schema()->columnType($field,$fieldType);
+        }
 
         $fieldsAdded = $this->_addFieldsToQuery($query, $config);
         $orderByTranslatedField = $this->_iterateClause($query, 'order', $config);
@@ -298,6 +301,10 @@ class ShadowTranslateBehavior extends TranslateBehavior
             return;
         }
 
+        foreach ($values as $field => $fieldType) {
+            $originalTypemap = $this->_table->schema()->typeMap()[$field];
+            $this->_translationTable->schema()->columnType($field,$originalTypemap);
+        }
         $primaryKey = (array)$this->_table->primaryKey();
         $id = $entity->get(current($primaryKey));
 
