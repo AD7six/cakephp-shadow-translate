@@ -359,8 +359,11 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function translationField($field)
     {
-        $translatedFields = $this->_translationFields();
+        if ($this->locale() === $this->getConfig('defaultLocale')) {
+            return $this->_table->aliasField($field);
+        }
 
+        $translatedFields = $this->_translationFields();
         if (in_array($field, $translatedFields)) {
             return $this->config('hasOneAlias') . '.' . $field;
         }

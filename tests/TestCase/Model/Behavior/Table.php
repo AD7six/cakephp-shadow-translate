@@ -26,4 +26,13 @@ class Table extends CakeTable
 
         parent::addBehavior($name, $options);
     }
+
+    public function removeBehavior($name)
+    {
+        if ($name === 'Translate') {
+            $this->_behaviors->unload('ShadowTranslate');
+        }
+
+        parent::addBehavior($name);
+    }
 }
