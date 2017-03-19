@@ -9,15 +9,14 @@
             "email": "andydawson76@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "cakephp/orm": "~3.0",
-        "cakephp/i18n": "~3.0"
+        "cakephp/orm": "^3.4.3",
+        "cakephp/i18n": "^3.4.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "*",
-        "cakephp/cakephp": "~3.1",
-        "cakephp/cakephp-codesniffer": "dev-master"
+        "phpunit/phpunit": "<6.0",
+        "cakephp/cakephp": "^3.4.3",
+        "cakephp/cakephp-codesniffer": "~2.3"
     },
     "autoload": {
         "psr-4": {

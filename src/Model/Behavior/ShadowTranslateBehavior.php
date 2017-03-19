@@ -243,6 +243,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             if (in_array($field, $fields)) {
                 $joinRequired = true;
                 $expression->setField("$alias.$field");
+
                 return;
             }
 
@@ -269,20 +270,52 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $newOptions = [$this->_translationTable->alias() => ['validate' => false]];
         $options['associated'] = $newOptions + $options['associated'];
 
+        // Check early if empty translations are present in the entity.
+        // If this is the case, unset them to prevent persistence.
+        // This only applies if $this->_config['allowEmptyTranslations'] is false
+        if ($this->_config['allowEmptyTranslations'] === false) {
+            $this->_unsetEmptyFields($entity);
+        }
+
         $this->_bundleTranslatedFields($entity);
         $bundled = $entity->get('_i18n') ?: [];
+        $noBundled = count($bundled) === 0;
 
-        if ($locale === $this->config('defaultLocale')) {
+        // No additional translation records need to be saved,
+        // as the entity is in the default locale.
+        if ($noBundled && $locale === $this->config('defaultLocale')) {
             return;
         }
+
         $values = $entity->extract($this->_translationFields(), true);
         $fields = array_keys($values);
+        $noFields = empty($fields);
 
-        if (empty($fields)) {
+        // If there are no fields and no bundled translations, or both fields
+        // in the default locale and bundled translations we can
+        // skip the remaining logic as its not necessary.
+        if ($noFields && $noBundled || ($fields && $bundled)) {
             return;
         }
+
         $primaryKey = (array)$this->_table->primaryKey();
         $id = $entity->get(current($primaryKey));
+
+        // When we have no key and bundled translations, we
+        // need to mark the entity dirty so the root
+        // entity persists.
+        if ($noFields && $bundled && !$id) {
+            foreach ($this->_translationFields() as $field) {
+                $entity->dirty($field, true);
+            }
+
+            return;
+        }
+
+        if ($noFields) {
+            return;
+        }
+
         $where = compact('id', 'locale');
 
         $translation = $this->_translationTable()->find()
@@ -312,6 +345,30 @@ class ShadowTranslateBehavior extends TranslateBehavior
         foreach ($fields as $field) {
             $entity->dirty($field, false);
         }
+    }
+
+    /**
+     * Returns a fully aliased field name for translated fields.
+     *
+     * If the requested field is configured as a translation field, field with
+     * an alias of a corresponding association is returned. Table-aliased
+     * field name is returned for all other fields.
+     *
+     * @param string $field Field name to be aliased.
+     * @return string
+     */
+    public function translationField($field)
+    {
+        if ($this->locale() === $this->getConfig('defaultLocale')) {
+            return $this->_table->aliasField($field);
+        }
+
+        $translatedFields = $this->_translationFields();
+        if (in_array($field, $translatedFields)) {
+            return $this->config('hasOneAlias') . '.' . $field;
+        }
+
+        return $this->_table->aliasField($field);
     }
 
     /**
