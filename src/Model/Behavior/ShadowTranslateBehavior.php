@@ -34,6 +34,10 @@ class ShadowTranslateBehavior extends TranslateBehavior
             $tableReferenceName = $this->_referenceName($table);
         }
 
+        if (empty($config['translateAllFields'])) {
+            $config['translateAllFields'] = false;
+        }
+
         $config += [
             'mainTableAlias' => $tableAlias,
             'translationTable' => $plugin . $tableReferenceName . 'Translations',
@@ -150,7 +154,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $alias = $config['mainTableAlias'];
         $joinRequired = false;
         foreach ($this->_translationFields() as $field) {
-            if (array_intersect($select, [$field, "$alias.$field"])) {
+            if (array_intersect($select, [$field, "$alias.$field"]) || $config['translateAllFields']) {
                 $joinRequired = true;
                 $query->select($query->aliasField($field, $config['hasOneAlias']));
             }
