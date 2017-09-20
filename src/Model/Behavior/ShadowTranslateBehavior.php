@@ -236,7 +236,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 return;
             }
             $field = $expression->getField();
-            if (!$field || strpos($field, '.')) {
+            if (!is_string($field) || strpos($field, '.')) {
                 return;
             }
 
