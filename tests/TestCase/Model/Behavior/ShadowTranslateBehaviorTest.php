@@ -1,9 +1,9 @@
 <?php
 namespace ShadowTranslate\Test\TestCase\Model\Behavior;
 
+use Cake\Database\Expression\QueryExpression;
 use Cake\I18n\I18n;
 use Cake\ORM\TableRegistry;
-use Cake\TestSuite\TestCase;
 use Cake\Test\TestCase\ORM\Behavior\TranslateBehaviorTest;
 use Cake\Utility\Hash;
 
@@ -306,6 +306,28 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'articles_translations',
             $query->sql(),
             'If the where clause includes a translated field - a join is required'
+        );
+    }
+
+    /**
+     * testTraversingWhereClauseWithNonStringField
+     *
+     * @return void
+     */
+    public function testTraversingWhereClauseWithNonStringField()
+    {
+        $table = TableRegistry::get('Articles');
+        $table->addBehavior('Translate');
+        $table->locale('eng');
+
+        $query = $table->find()->select()->where(function ($exp) {
+            return $exp->lt(new QueryExpression('1'), 50);
+        });
+
+        $this->assertContains(
+            'articles_translations',
+            $query->sql(),
+            'Do not try to use non string fields when traversing "where" clause'
         );
     }
 
