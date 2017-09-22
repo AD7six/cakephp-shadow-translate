@@ -375,7 +375,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      *
      * @param \Cake\Datasource\ResultSetInterface $results Results to map.
      * @param string $locale Locale string
-     * @return \Cake\Collection\Collection
+     * @return \Cake\Collection\CollectionInterface
      */
     protected function _rowMapper($results, $locale)
     {
@@ -431,7 +431,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * into each entity under the `_translations` key
      *
      * @param \Cake\Datasource\ResultSetInterface $results Results to modify.
-     * @return \Cake\Collection\Collection
+     * @return \Cake\Collection\CollectionInterface
      */
     public function groupTranslations($results)
     {
