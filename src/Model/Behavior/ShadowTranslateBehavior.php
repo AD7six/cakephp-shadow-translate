@@ -5,12 +5,10 @@ use ArrayObject;
 use Cake\Database\Expression\FieldInterface;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
-use Cake\ORM\Behavior;
 use Cake\ORM\Behavior\TranslateBehavior;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
-use Cake\Utility\Inflector;
 
 /**
  * ShadowTranslate behavior
