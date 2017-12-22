@@ -987,6 +987,40 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     }
 
     /**
+     * Test buildMarshalMap() builds new entities.
+     *
+     * @return void
+     */
+    public function testBuildMarshalMapBuildEntities()
+    {
+        $table = TableRegistry::get('Articles');
+        // Unlike test case of core Translate behavior "fields" is not set to
+        // test marshalling with lazily fetched fields list.
+        $table->addBehavior('Translate');
+        $translate = $table->behaviors()->get('Translate');
+
+        $map = $translate->buildMarshalMap($table->marshaller(), [], []);
+        $entity = $table->newEntity();
+        $data = [
+            'en' => [
+                'title' => 'English Title',
+                'body' => 'English Content'
+            ],
+            'es' => [
+                'title' => 'Titulo Español',
+                'body' => 'Contenido Español'
+            ]
+        ];
+        $result = $map['_translations']($data, $entity);
+        $this->assertEmpty($entity->errors(), 'No validation errors.');
+        $this->assertCount(2, $result);
+        $this->assertArrayHasKey('en', $result);
+        $this->assertArrayHasKey('es', $result);
+        $this->assertEquals('English Title', $result['en']->title);
+        $this->assertEquals('Titulo Español', $result['es']->title);
+    }
+
+    /**
      * Used in the config tests to verify that a simple find still works
      *
      * @param string $tableAlias

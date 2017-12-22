@@ -346,6 +346,16 @@ class ShadowTranslateBehavior extends TranslateBehavior
     }
 
     /**
+     * {@inheritDoc}
+     */
+    public function buildMarshalMap($marshaller, $map, $options)
+    {
+        $this->_translationFields();
+
+        return parent::buildMarshalMap($marshaller, $map, $options);
+    }
+
+    /**
      * Returns a fully aliased field name for translated fields.
      *
      * If the requested field is configured as a translation field, field with
