@@ -81,10 +81,10 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testDefaultAliases()
     {
         $table = TableRegistry::get('Articles');
-        $table->table();
+        $table->getTable();
         $table->addBehavior('Translate');
 
-        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $config = $table->behaviors()->get('ShadowTranslate')->getConfig();
         $wantedKeys = [
             'translationTable',
             'mainTableAlias',
@@ -113,10 +113,10 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             ['className' => 'ShadowTranslate\Test\TestCase\Model\Behavior\Table']
         );
 
-        $table->table();
+        $table->getTable();
         $table->addBehavior('Translate');
 
-        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $config = $table->behaviors()->get('ShadowTranslate')->getConfig();
         $wantedKeys = [
             'translationTable',
             'mainTableAlias',
@@ -136,7 +136,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $translationTable = TableRegistry::get('SomeRandomPlugin.ArticlesTranslations');
         $this->assertSame(
             'SomeRandomPlugin.ArticlesTranslations',
-            $translationTable->registryAlias(),
+            $translationTable->getRegistryAlias(),
             'It should be a different object to the one in the no-plugin prefix'
         );
 
@@ -155,13 +155,13 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testChangingReferenceName()
     {
         $table = TableRegistry::get('Articles');
-        $table->table();
+        $table->getTable();
         $table->addBehavior(
             'Translate',
             ['referenceName' => 'Posts']
         );
 
-        $config = $table->behaviors()->get('ShadowTranslate')->config();
+        $config = $table->behaviors()->get('ShadowTranslate')->getConfig();
         $wantedKeys = [
             'translationTable',
             'mainTableAlias',
@@ -189,11 +189,11 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
 
-        $table->locale('eng');
+        $table->setLocale('eng');
         $table->find()->select(['title'])->first();
 
         $expected = ['title', 'body'];
-        $result = $table->behaviors()->get('ShadowTranslate')->config('fields');
+        $result = $table->behaviors()->get('ShadowTranslate')->getConfig('fields');
         $this->assertSame(
             $expected,
             $result,
@@ -215,8 +215,8 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $this->assertTrue($exists, 'The table registry should have an object in this key now');
 
         $translationTable = TableRegistry::get('ArticlesTranslations');
-        $this->assertSame('articles_translations', $translationTable->table());
-        $this->assertSame('ArticlesTranslations', $translationTable->alias());
+        $this->assertSame('articles_translations', $translationTable->getTable());
+        $this->assertSame('ArticlesTranslations', $translationTable->getAlias());
     }
 
     /**
@@ -240,7 +240,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'The default locale doesn\'t need a join'
         );
 
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $query = $table->find()->select(['id']);
         $this->assertNotContains(
@@ -266,7 +266,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $query = $table->find();
         $this->assertContains(
@@ -299,7 +299,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $query = $table->find()->select(['id'])->where(['title' => 'First Article']);
         $this->assertContains(
@@ -318,7 +318,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $query = $table->find()->select()->where(function ($exp) {
             return $exp->lt(new QueryExpression('1'), 50);
@@ -340,7 +340,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $query = $table->find()->select(['id'])->order(['title' => 'desc']);
         $this->assertContains(
@@ -370,11 +370,11 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $table->belongsTo('Copy', ['className' => 'Articles', 'foreignKey' => 'author_id']);
         $table->Copy->addBehavior('ShadowTranslate.ShadowTranslate');
-        $table->Copy->locale('deu');
+        $table->Copy->setLocale('deu');
 
         $query = $table->find()
             ->where(['Articles.id' => 3])
@@ -417,7 +417,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'translationTable' => 'articles_more_translations'
         ]);
 
-        $table->locale('eng');
+        $table->setLocale('eng');
         $results = $table->find()->combine('title', 'subtitle', 'id')->toArray();
         $expected = [
             1 => ['Title #1' => 'SubTitle #1'],
@@ -454,7 +454,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $article = $table->find('all')
             ->select(['id'])
@@ -478,7 +478,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $article = $table->find('all')
             ->where(['id' => 1])
@@ -502,18 +502,18 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $article = $table->find('all')
             ->order(['id' => 'desc'])
-            ->hydrate(false)
+            ->enableHydration(false)
             ->toArray();
 
         $this->assertSame([3, 2, 1], Hash::extract($article, '{n}.id'));
 
         $article = $table->find('all')
             ->order(['title' => 'asc'])
-            ->hydrate(false)
+            ->enableHydration(false)
             ->toArray();
 
         $expected = ['Title #1', 'Title #2', 'Title #3'];
@@ -532,7 +532,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
 
         $result = $table
             ->find('translations')
-            ->hydrate(false)
+            ->enableHydration(false)
             ->first();
         $this->assertArrayHasKey('title', $result);
     }
@@ -548,7 +548,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->belongsTo('Authors');
 
         $table->addBehavior('Translate');
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $query = $table
             ->find('translations')
@@ -585,8 +585,8 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $Articles->addBehavior('ShadowTranslate.ShadowTranslate');
         $Tags->addBehavior('ShadowTranslate.ShadowTranslate');
 
-        $Articles->locale('deu');
-        $Tags->locale('deu');
+        $Articles->setLocale('deu');
+        $Tags->setLocale('deu');
 
         $Articles->belongsToMany('Tags');
 
@@ -650,7 +650,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
-        $table->locale('zzz');
+        $table->setLocale('zzz');
         $result = $table->get(1);
 
         $this->assertSame('', $result->title, 'The empty translation should be used');
@@ -669,7 +669,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table->addBehavior('Translate', [
             'allowEmptyTranslations' => false,
         ]);
-        $table->locale('zzz');
+        $table->setLocale('zzz');
         $result = $table->get(1);
 
         $this->assertSame('First Article', $result->title, 'The empty translation should be ignored');
@@ -687,7 +687,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate');
 
-        $table->locale('eng');
+        $table->setLocale('eng');
         $query = $table->find()->select();
         $query->select([
             'title',
@@ -724,7 +724,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     public function testSaveWithAccessibleFalse()
     {
         $table = TableRegistry::get('Articles');
-        $table->entityClass(__NAMESPACE__ . '\BakedArticles');
+        $table->setEntityClass(__NAMESPACE__ . '\BakedArticles');
         $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
 
         $article = $table->get(1);
@@ -752,11 +752,11 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
         $field = $table->translationField('title');
         $this->assertSame($expectedSameLocale, $field);
 
-        I18n::locale('es_ES');
+        I18n::setLocale('es_ES');
         $field = $table->translationField('title');
         $this->assertSame($expectedOtherLocale, $field);
 
-        I18n::locale('en');
+        I18n::setLocale('en');
         $field = $table->translationField('title');
         $this->assertSame($expectedOtherLocale, $field);
 
@@ -766,19 +766,19 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'defaultLocale' => 'de_DE'
         ]);
 
-        I18n::locale('de_DE');
+        I18n::setLocale('de_DE');
         $field = $table->translationField('title');
         $this->assertSame($expectedSameLocale, $field);
 
-        I18n::locale('en_US');
+        I18n::setLocale('en_US');
         $field = $table->translationField('title');
         $this->assertSame($expectedOtherLocale, $field);
 
-        $table->locale('de_DE');
+        $table->setLocale('de_DE');
         $field = $table->translationField('title');
         $this->assertSame($expectedSameLocale, $field);
 
-        $table->locale('es');
+        $table->setLocale('es');
         $field = $table->translationField('title');
         $this->assertSame($expectedOtherLocale, $field);
     }
@@ -795,7 +795,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     {
         $table = TableRegistry::get('Articles');
         $table->addBehavior('Translate', ['fields' => ['title', 'body']]);
-        $table->entityClass('Cake\Test\TestCase\ORM\Behavior\Article');
+        $table->setEntityClass('Cake\Test\TestCase\ORM\Behavior\Article');
 
         $data = [
             'author_id' => 1,
@@ -839,7 +839,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             'fields' => ['title'],
             'validator' => (new \Cake\Validation\Validator)->add('title', 'notBlank', ['rule' => 'notBlank'])
         ]);
-        $table->entityClass('Cake\Test\TestCase\ORM\Behavior\Article');
+        $table->setEntityClass('Cake\Test\TestCase\ORM\Behavior\Article');
 
         $data = [
             'author_id' => 1,
@@ -1012,7 +1012,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
             ]
         ];
         $result = $map['_translations']($data, $entity);
-        $this->assertEmpty($entity->errors(), 'No validation errors.');
+        $this->assertEmpty($entity->getErrors(), 'No validation errors.');
         $this->assertCount(2, $result);
         $this->assertArrayHasKey('en', $result);
         $this->assertArrayHasKey('es', $result);
@@ -1029,7 +1029,7 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
     protected function _testFind($tableAlias = 'Articles')
     {
         $table = TableRegistry::get($tableAlias);
-        $table->locale('eng');
+        $table->setLocale('eng');
 
         $query = $table->find()->select();
         $result = array_intersect_key(

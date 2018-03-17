@@ -23,8 +23,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function __construct(Table $table, array $config = [])
     {
-        $tableAlias = $table->alias();
-        list($plugin) = pluginSplit($table->registryAlias(), true);
+        $tableAlias = $table->getAlias();
+        list($plugin) = pluginSplit($table->getRegistryAlias(), true);
 
         if (isset($config['referenceName'])) {
             $tableReferenceName = $config['referenceName'];
@@ -56,14 +56,14 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function setupFieldAssociations($fields, $table, $fieldConditions, $strategy)
     {
-        $config = $this->config();
+        $config = $this->getConfig();
 
         $this->_table->hasMany($config['translationTable'], [
             'className' => $config['translationTable'],
             'foreignKey' => 'id',
             'strategy' => $strategy,
             'propertyName' => '_i18n',
-            'dependent' => true
+            'dependent' => true,
         ]);
     }
 
@@ -77,15 +77,15 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * @param \ArrayObject $options The options for the query
      * @return void
      */
-    public function beforeFind(Event $event, Query $query, $options)
+    public function beforeFind(Event $event, Query $query, ArrayObject $options)
     {
-        $locale = $this->locale();
+        $locale = $this->getLocale();
 
-        if ($locale === $this->config('defaultLocale')) {
+        if ($locale === $this->getConfig('defaultLocale')) {
             return;
         }
 
-        $config = $this->config();
+        $config = $this->getConfig();
 
         if (isset($options['filterByCurrentLocale'])) {
             $joinType = $options['filterByCurrentLocale'] ? 'INNER' : 'LEFT';
@@ -133,7 +133,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     protected function _addFieldsToQuery(Query $query, array $config)
     {
-        if ($query->autoFields()) {
+        if ($query->isAutoFieldsEnabled()) {
             return true;
         }
 
@@ -264,8 +264,8 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function beforeSave(Event $event, EntityInterface $entity, ArrayObject $options)
     {
-        $locale = $entity->get('_locale') ?: $this->locale();
-        $newOptions = [$this->_translationTable->alias() => ['validate' => false]];
+        $locale = $entity->get('_locale') ?: $this->getLocale();
+        $newOptions = [$this->_translationTable->getAlias() => ['validate' => false]];
         $options['associated'] = $newOptions + $options['associated'];
 
         // Check early if empty translations are present in the entity.
@@ -281,7 +281,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
         // No additional translation records need to be saved,
         // as the entity is in the default locale.
-        if ($noBundled && $locale === $this->config('defaultLocale')) {
+        if ($noBundled && $locale === $this->getConfig('defaultLocale')) {
             return;
         }
 
@@ -296,7 +296,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             return;
         }
 
-        $primaryKey = (array)$this->_table->primaryKey();
+        $primaryKey = (array)$this->_table->getPrimaryKey();
         $id = $entity->get(current($primaryKey));
 
         // When we have no key and bundled translations, we
@@ -304,7 +304,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         // entity persists.
         if ($noFields && $bundled && !$id) {
             foreach ($this->_translationFields() as $field) {
-                $entity->dirty($field, true);
+                $entity->setDirty($field, true);
             }
 
             return;
@@ -319,7 +319,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
         $translation = $this->_translationTable()->find()
             ->select(array_merge(['id', 'locale'], $fields))
             ->where($where)
-            ->bufferResults(false)
+            ->enableBufferedResults(false)
             ->first();
 
         if ($translation) {
@@ -331,17 +331,17 @@ class ShadowTranslateBehavior extends TranslateBehavior
                 $where + $values,
                 [
                     'useSetters' => false,
-                    'markNew' => true
+                    'markNew' => true,
                 ]
             );
         }
 
         $entity->set('_i18n', array_merge($bundled, [$translation]));
         $entity->set('_locale', $locale, ['setter' => false]);
-        $entity->dirty('_locale', false);
+        $entity->setDirty('_locale', false);
 
         foreach ($fields as $field) {
-            $entity->dirty($field, false);
+            $entity->setDirty($field, false);
         }
     }
 
@@ -367,13 +367,13 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function translationField($field)
     {
-        if ($this->locale() === $this->getConfig('defaultLocale')) {
+        if ($this->getLocale() === $this->getConfig('defaultLocale')) {
             return $this->_table->aliasField($field);
         }
 
         $translatedFields = $this->_translationFields();
         if (in_array($field, $translatedFields)) {
-            return $this->config('hasOneAlias') . '.' . $field;
+            return $this->getConfig('hasOneAlias') . '.' . $field;
         }
 
         return $this->_table->aliasField($field);
@@ -399,7 +399,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
             $hydrated = !is_array($row);
 
             if (empty($row['translation'])) {
-                $row['_locale'] = $this->locale();
+                $row['_locale'] = $this->getLocale();
                 unset($row['translation']);
 
                 if ($hydrated) {
@@ -479,11 +479,11 @@ class ShadowTranslateBehavior extends TranslateBehavior
     {
         $translations = (array)$entity->get('_translations');
 
-        if (empty($translations) && !$entity->dirty('_translations')) {
+        if (empty($translations) && !$entity->isDirty('_translations')) {
             return;
         }
 
-        $primaryKey = (array)$this->_table->primaryKey();
+        $primaryKey = (array)$this->_table->getPrimaryKey();
         $key = $entity->get(current($primaryKey));
 
         foreach ($translations as $lang => $translation) {
@@ -512,7 +512,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
     protected function _translationTable($config = [])
     {
         if (!$config) {
-            $config = $this->config();
+            $config = $this->getConfig();
         }
 
         return TableRegistry::get($config['translationTable']);
@@ -525,16 +525,16 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     protected function _mainFields()
     {
-        $fields = $this->config('mainTableFields');
+        $fields = $this->getConfig('mainTableFields');
 
         if ($fields) {
             return $fields;
         }
 
         $table = $this->_table;
-        $fields = $table->schema()->columns();
+        $fields = $table->getSchema()->columns();
 
-        $this->config('mainTableFields', $fields);
+        $this->setConfig('mainTableFields', $fields);
 
         return $fields;
     }
@@ -546,17 +546,17 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     protected function _translationFields()
     {
-        $fields = $this->config('fields');
+        $fields = $this->getConfig('fields');
 
         if ($fields) {
             return $fields;
         }
 
         $table = $this->_translationTable();
-        $fields = $table->schema()->columns();
+        $fields = $table->getSchema()->columns();
         $fields = array_values(array_diff($fields, ['id', 'locale']));
 
-        $this->config('fields', $fields);
+        $this->setConfig('fields', $fields);
 
         return $fields;
     }
