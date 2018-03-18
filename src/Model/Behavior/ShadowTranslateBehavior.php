@@ -459,7 +459,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
             $row['_translations'] = $result;
             unset($row['_i18n']);
-            if (is_object($row)) {
+            if ($row instanceof EntityInterface) {
                 $row->clean();
             }
 
