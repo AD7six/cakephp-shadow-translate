@@ -5,6 +5,7 @@ use ArrayObject;
 use Cake\Database\Expression\FieldInterface;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
+use Cake\I18n\I18n;
 use Cake\ORM\Behavior\TranslateBehavior;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
@@ -23,6 +24,11 @@ class ShadowTranslateBehavior extends TranslateBehavior
      */
     public function __construct(Table $table, array $config = [])
     {
+        $this->_defaultConfig['implementedMethods'] += [
+            'setLocale' => 'setLocale',
+            'getLocale' => 'getLocale',
+        ];
+
         $tableAlias = $table->getAlias();
         list($plugin) = pluginSplit($table->getRegistryAlias(), true);
 
@@ -39,6 +45,46 @@ class ShadowTranslateBehavior extends TranslateBehavior
         ];
 
         parent::__construct($table, $config);
+    }
+
+    /**
+     * Sets the locale that should be used for all future find and save operations on
+     * the table where this behavior is attached to.
+     *
+     * When fetching records, the behavior will include the content for the locale set
+     * via this method, and likewise when saving data, it will save the data in that
+     * locale.
+     *
+     * Note that in case an entity has a `_locale` property set, that locale will win
+     * over the locale set via this method (and over the globally configured one for
+     * that matter)!
+     *
+     * @param string|null $locale The locale to use for fetching and saving records. Pass `null`
+     * in order to unset the current locale, and to make the behavior fall back to using the
+     * globally configured locale.
+     * @return $this
+     * @see \ShadowTranslate\ORM\Behavior\ShadowTranslateBehavior::getLocale()
+     */
+    public function setLocale($locale)
+    {
+        $this->_locale = $locale;
+
+        return $this;
+    }
+
+    /**
+     * Returns the current locale.
+     *
+     * If no locale has been explicitly set via `setLocale()`, this method will return
+     * the currently configured global locale.
+     *
+     * @return string
+     * @see \Cake\I18n\I18n::getLocale()
+     * @see \ShadowTranslate\ORM\Behavior\ShadowTranslateBehavior::setLocale()
+     */
+    public function getLocale()
+    {
+        return $this->_locale ?: I18n::getLocale();
     }
 
     /**
