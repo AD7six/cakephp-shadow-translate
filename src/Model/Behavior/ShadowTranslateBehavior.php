@@ -123,7 +123,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
      * @param \ArrayObject $options The options for the query
      * @return void
      */
-    public function beforeFind(Event $event, Query $query, ArrayObject $options)
+    public function beforeFind(Event $event, Query $query, $options)
     {
         $locale = $this->getLocale();
 
