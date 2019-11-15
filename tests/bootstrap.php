@@ -31,7 +31,3 @@ if (file_exists($root . '/config/bootstrap.php')) {
 }
 
 require $root . '/vendor/cakephp/cakephp/tests/bootstrap.php';
-
-Plugin::load('ShadowTranslate', [
-    'path' => dirname(dirname(__FILE__)) . DS
-]);

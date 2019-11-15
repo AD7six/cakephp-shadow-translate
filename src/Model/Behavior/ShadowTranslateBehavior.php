@@ -7,6 +7,7 @@ use Cake\Datasource\EntityInterface;
 use Cake\Event\Event;
 use Cake\I18n\I18n;
 use Cake\ORM\Behavior\TranslateBehavior;
+use Cake\ORM\Entity;
 use Cake\ORM\Query;
 use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
@@ -16,6 +17,13 @@ use Cake\ORM\TableRegistry;
  */
 class ShadowTranslateBehavior extends TranslateBehavior
 {
+    /**
+     * Method to use to get visible properties
+     *
+     * @var string
+     */
+    protected $_visiblePropertiesMethod = 'visibleProperties';
+
     /**
      * Constructor
      *
@@ -43,6 +51,10 @@ class ShadowTranslateBehavior extends TranslateBehavior
             'translationTable' => $plugin . $tableReferenceName . 'Translations',
             'hasOneAlias' => $tableAlias . 'Translation',
         ];
+
+        if (method_exists(Entity::class, 'getVisible')) {
+            $this->_visiblePropertiesMethod = 'getVisible';
+        }
 
         parent::__construct($table, $config);
     }
@@ -457,7 +469,7 @@ class ShadowTranslateBehavior extends TranslateBehavior
 
             $translation = $row['translation'];
 
-            $keys = $hydrated ? $translation->visibleProperties() : array_keys($translation);
+            $keys = $hydrated ? $translation->{$this->_visiblePropertiesMethod}() : array_keys($translation);
 
             foreach ($keys as $field) {
                 if ($field === 'locale') {
