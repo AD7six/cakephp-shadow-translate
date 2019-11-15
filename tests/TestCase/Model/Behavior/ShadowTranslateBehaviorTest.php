@@ -14,12 +14,13 @@ class ShadowTranslateBehaviorTest extends TranslateBehaviorTest
 {
     public $fixtures = [
         'core.Articles',
-        'core.Authors',
-        'core.Comments',
-        'core.Tags',
         'core.ArticlesTags',
-        'core.SpecialTags',
+        'core.Authors',
         'core.Groups',
+        'core.SpecialTags',
+        'core.Tags',
+        'core.Comments',
+        'core.Translates',
         'plugin.ShadowTranslate.ArticlesTranslations',
         'plugin.ShadowTranslate.ArticlesMoreTranslations',
         'plugin.ShadowTranslate.AuthorsTranslations',
