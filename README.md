@@ -1,3 +1,7 @@
+# Note:
+
+As of CakePHP 4.0 the ability to use shadow tables for storing translated content is available through core's `Translate` behavior itself. Check the CakePHP [manual](https://book.cakephp.org/4/en/orm/behaviors/translate.html#shadow-table-strategy) for more details.
+
 # Shadow translate
 
 [![Build Status](https://img.shields.io/travis/AD7six/cakephp-shadow-translate/master.svg?style=flat-square)](https://travis-ci.org/AD7six/cakephp-shadow-translate)
